@@ -1403,6 +1403,62 @@ label:has(> .micro){position:relative}
 .txtdocs{display:flex;flex-direction:column;gap:6px}
 .txtdocs details.mas label{display:block;margin-top:8px}
 #karInv{min-height:96px}
+/* ===== 26-10-2026: revisión de informes gasto a gasto (revision.js), notas de crédito y guías de despacho, y
+   personalización en el menú del usuario ===== */
+.rev .toolbar{flex-wrap:wrap;gap:10px}
+.rev .toolbar h2{flex:1;min-width:0}
+.rev-cab{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--chip);margin:4px 0 14px}
+.rev-cab>span{display:flex;flex-direction:column;gap:2px;min-width:0}
+.rev-cab .who{flex-direction:row;align-items:center;gap:10px}
+.rev-cab .who>span{display:flex;flex-direction:column}
+.rev-cab .money{font:700 22px/1.1 var(--display)}
+.rev-flujo{flex:1;min-width:220px;font-size:13px}
+.rev-coment{border-left:3px solid var(--accent);background:var(--surface);padding:10px 14px;border-radius:0 10px 10px 0;margin:0 0 14px;display:flex;flex-direction:column;gap:6px}
+.rev-coment p{margin:0;display:flex;flex-direction:column}
+.rev-progreso{height:8px;border-radius:999px;background:var(--chip);overflow:hidden;margin:4px 0 6px}
+.rev-progreso span{display:block;height:100%;background:var(--s-done);border-radius:999px;transition:width .3s}
+.rev-cols{display:grid;grid-template-columns:minmax(240px,340px) 1fr;gap:16px;align-items:start;margin-top:12px}
+.rev-cols>div{min-width:0}
+.rev-lista{display:flex;flex-direction:column;gap:6px}
+.rev-item{display:flex;justify-content:space-between;gap:10px;align-items:center;width:100%;text-align:left;font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer}
+.rev-item:hover{border-color:var(--accent)}
+.rev-item.on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 25%,transparent)}
+.rev-it-tx{display:flex;flex-direction:column;min-width:0}
+.rev-it-tx b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rev-it-der{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+.rev-det{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--surface);display:flex;flex-direction:column;gap:12px}
+.rev-det-cab{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.rev-det-cab h3{margin:0;flex:1;min-width:0}
+.rev-det-cols{display:grid;grid-template-columns:minmax(160px,240px) 1fr;gap:16px;align-items:start}
+.rev-foto img{width:100%;max-height:340px;object-fit:contain;border-radius:10px;border:1px solid var(--line);background:var(--chip)}
+.rev-sinfoto{display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:center;text-align:center;min-height:140px;border:1px dashed var(--line);border-radius:10px;padding:12px;font-size:13px}
+.rev-sinfoto svg{width:28px;height:28px}
+.rev-datos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px 16px;margin:0}
+.rev-datos div{min-width:0}
+.rev-datos dt{font-size:12px;color:var(--muted)}
+.rev-datos dd{margin:0;overflow-wrap:anywhere}
+.rev-edita{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:12px;background:var(--chip)}
+.rev-campos{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.rev-campos label,.rev-nota{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600}
+.rev-campos select,.rev-campos input,.rev-nota textarea{font:inherit;font-weight:400;min-width:0}
+.rev-edita summary{cursor:pointer}
+.rev-edita[open] summary{margin-bottom:4px}
+.btn.rev-ok{background:#17804C;color:#fff}
+.btn.rev-no{color:#B4312A;border-color:#F0ADA8}
+.btn.rev-dev{color:#8A5B00;border-color:#F2C77A}
+.rev-hist ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:13px}
+.rev-pie{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.rev-pie .btn[disabled]{opacity:.5;cursor:not-allowed}
+@media (max-width:860px){.rev-cols,.rev-det-cols{grid-template-columns:1fr}.rev-pie{justify-content:stretch}.rev-pie .btn{flex:1}}
+@media (max-width:560px){.rev-cab{flex-direction:column;align-items:stretch;gap:10px}.rev-flujo{min-width:0}.rev .toolbar h2{flex-basis:100%;order:2}}
+/* Trazabilidad entre documentos (trazabilidad.js, 01-11-2026) */
+.traza{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface);display:flex;flex-direction:column;gap:8px}
+.traza-lista{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px dashed var(--accent);display:flex;flex-direction:column;gap:6px}
+.traza-lista li{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;position:relative}
+.traza-lista li::before{content:'';position:absolute;left:-20px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--surface)}
+.traza-tipo{font-size:12px;color:var(--muted);min-width:132px}
+.traza-doc{flex:1;min-width:0;overflow-wrap:anywhere}
+@media (max-width:560px){.traza-tipo{min-width:0;width:100%}}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0B2E4F">
@@ -1856,7 +1912,7 @@ let ALMACEN=ALMACEN_NAVEGADOR;
 
 /* Registros con id, uno por fila en el servidor; y ajustes que se guardan enteros */
 const colecciones=s=>Object.assign({projects:s.projects||[],tasks:s.tasks||[],people:s.people||[],roles:s.roles||[]},s.d||{});
-const AJUSTES=['company','mods','custom','auto','aprob','caja','checklists','integ','feriados','flujos','gastoCats','funciones','jornada','marca','correlativos','textosDoc','estados','karin','vistasEmpresa'];
+const AJUSTES=['company','mods','custom','auto','aprob','caja','checklists','integ','feriados','flujos','gastoCats','funciones','jornada','marca','correlativos','textosDoc','estados','karin','vistasEmpresa','inicioEmpresa'];
 const lineaLog=a=>a.at+'|'+a.text;
 
 /* Foto de lo guardado: texto de cada registro, para comparar en el siguiente guardado */
@@ -1882,7 +1938,7 @@ function cambiosEntre(a,b,s){
 function marcarGuardado(){FOTO=fotoDe(S);ULTIMO=JSON.stringify(S)}
 
 /* ===== Estado y guardado ===== */
-const COLLS=['contacts','ocs','ships','products','moves','docs','rends','fondos','informes','leaves','reqs','accdocs','avisos','autoruns','adjuntos','bodegas','activos','mants','plantillas','cotizaciones','bitacora','edps','cartola','centros','indicadores','liquidaciones','procesos','cursos','trabajos','capacitaciones','evaluaciones','formularios','marcas','ofertas','incidentes','riesgos','reservas','tableros','filas','comentarios','observaciones','denuncias'];
+const COLLS=['contacts','ocs','ships','products','moves','docs','rends','fondos','informes','leaves','reqs','accdocs','avisos','autoruns','adjuntos','bodegas','activos','mants','plantillas','cotizaciones','bitacora','edps','cartola','centros','indicadores','liquidaciones','procesos','cursos','trabajos','capacitaciones','evaluaciones','formularios','marcas','ofertas','incidentes','riesgos','reservas','tableros','filas','comentarios','observaciones','denuncias','ncs','guias'];
 const DEFMODS={proyectos:true,compras:true,comex:true,logistica:true,activos:true,contabilidad:true,rrhh:true,acreditacion:true,directorio:true};
 let S, PREFS={theme:'light'};   // claro por defecto (pedido de Miguel, 16-10-2026); oscuro y automático se eligen en el menú de usuario
 Object.assign(PREFS,ALMACEN.leerPrefs());
@@ -1973,9 +2029,11 @@ const activeProjects=()=>visibleProjects().filter(p=>p.status!=='cerrado');
 const enPesos=m=>!m||m==='CLP';
 // Una factura en dólares o euros es del exterior: va sin IVA (el IVA de importación está en el costeo del embarque)
 const docTotal=r=>enPesos(r.moneda)?Math.round((+r.neto||0)*1.19):Math.round((+r.neto||0)*100)/100;
-const docSaldo=r=>Math.max(0,docTotal(r)-(+r.pagado||0));
-function docSt(r){const tot=docTotal(r),pg=+r.pagado||0;
-  if(tot>0&&pg>=tot)return{label:r.tipo==='Venta'?'Cobrada':'Pagada',tone:'done'};
+// Las notas de crédito (tributarios.js) rebajan lo que queda por cobrar o pagar; si cubren todo el total, la factura queda anulada
+const docSaldo=r=>Math.max(0,docTotal(r)-(+r.pagado||0)-ncTotalDe(r));
+function docSt(r){const tot=docTotal(r),pg=+r.pagado||0,nc=ncTotalDe(r);
+  if(tot>0&&nc>=tot)return{label:'Anulada con nota de crédito',tone:'todo'};
+  if(tot>0&&pg+nc>=tot)return{label:r.tipo==='Venta'?'Cobrada':'Pagada',tone:'done'};
   if(r.vence&&r.vence<TODAY)return{label:'Vencida',tone:'stuck'};
   if(pg>0)return{label:'Parcial',tone:'prog'};return{label:'Pendiente',tone:'todo'}}
 const stockOf=p=>S.d.moves.filter(m=>m.producto===p.id).reduce((a,m)=>a+(m.tipo==='Salida'?-1:m.tipo==='Traspaso'?0:1)*(+m.cantidad||0),+p.stock0||0);   // un traspaso entre bodegas no cambia el total
@@ -2009,8 +2067,9 @@ const facCLP=d=>clpDoc(d).est;
 const ocCLP=o=>enPesos(o.moneda)?(+o.neto||0):(aCLP(o.neto,o.moneda,o.fecha)||0);
 function projFin(pid){
   const docs=S.d.docs.filter(d=>d.proyecto===pid);
-  const ventas=sum(docs.filter(d=>d.tipo==='Venta'),d=>clpDoc(d).real);
-  const compras=sum(docs.filter(d=>d.tipo==='Compra'),d=>clpDoc(d).real);
+  // las notas de crédito restan, al cambio de su factura (como v_resultado_proyecto)
+  const ventas=sum(docs.filter(d=>d.tipo==='Venta'),d=>clpDoc(d).real-ncCLP(d));
+  const compras=sum(docs.filter(d=>d.tipo==='Compra'),d=>clpDoc(d).real-ncCLP(d));
   const rl=S.d.rends.filter(r=>r.proyecto===pid&&['Aprobada','Reembolsada'].includes(r.estado));
   const rends=sum(rl,r=>clpRend(r).real);   // en CLP, como la vista v_resultado_proyecto
   const mat=S.d.moves.filter(m=>m.proyecto===pid&&m.tipo==='Salida').reduce((a,m)=>{const p=S.d.products.find(x=>x.id===m.producto);return a+(+m.cantidad||0)*(+p?.costo||0)},0);
@@ -2729,11 +2788,12 @@ function aprobadoresDe(ent,r){
   return S.people.filter(p=>p.estado!=='Inactivo'&&(p.id!==r[ENT[ent].owner]||roleOf(p).admin)&&esDelNivel(s,p.id)).map(p=>p.id);
 }
 const anotar=(r,x)=>(r.aprobaciones=r.aprobaciones||[]).push(Object.assign({por:S.me,at:new Date().toISOString()},x));
-function aprobar(ent,r){
-  const A=APROB_ENTS[ent],L=totalNiveles(ent,r);anotar(r,{nivel:ronda(r)+1,accion:'aprobó'});
+function aprobar(ent,r,extra){
+  const A=APROB_ENTS[ent],L=totalNiveles(ent,r);anotar(r,Object.assign({nivel:ronda(r)+1,accion:'aprobó'},extra));
   if(ronda(r)>=L){r.estado=A.ok;if(ent==='ocs'){r.aprobador=S.me;stampOC(r)}return}
   if(SIMULA)return;
-  const sig=aprobadoresDe(ent,r)||[],txt=`${ENT[ent].title(r)} espera tu aprobación (nivel ${ronda(r)+1} de ${L})`,at=new Date().toISOString();
+  const nota=extra&&extra.nota?` · ${refName('people',S.me)} te dejó un comentario: «${extra.nota.length>80?extra.nota.slice(0,80)+'…':extra.nota}»`:'';
+  const sig=aprobadoresDe(ent,r)||[],txt=`${ENT[ent].title(r)} espera tu aprobación (nivel ${ronda(r)+1} de ${L})${nota}`,at=new Date().toISOString();
   sig.forEach(p=>S.d.avisos.unshift({id:uid(),para:p,texto:txt,ent,reg:r.id,regla:'',at,leido:false}));
 }
 function rechazar(ent,r){const niv=ent==='rends'&&r.informe?ronda(informeDe(r)||{})+1:ronda(r)+1;anotar(r,{nivel:niv,accion:'rechazó'});r.estado=APROB_ENTS[ent].no}
@@ -2750,7 +2810,7 @@ function aprobResumen(ent,r){
   const nv=!ns?'':`<p class="hint">${ns.length>1?`Requiere ${ns.length} niveles`:'Aprueba'}: ${ns.map((s,i)=>`${ns.length>1?(i+1)+'. ':''}${esc(nomNivel(s))}${i<k?' ✓':pend&&i===k?' (pendiente)':''}`).join(' · ')}</p>`;
   // El hilo de la aprobación (diseño W3): lo que ya pasó y, si sigue pendiente, el nivel que falta
   const nodo=(tipo,txt,cuando)=>`<li class="h-${tipo}"><span class="hnodo" aria-hidden="true">${hiloNodo(tipo)}</span><span class="htx"><b>${txt}</b>${cuando?`<span>${cuando}</span>`:''}</span></li>`;
-  const hist=h.map(x=>nodo(x.accion==='aprobó'?'ok':'late',`${esc(refName('people',x.por)||'Alguien')} ${x.accion}${x.nivel&&ns&&ns.length>1?` (nivel ${x.nivel})`:''}`,fmtAt(x.at))).join('')
+  const hist=h.map(x=>nodo(x.accion==='aprobó'?'ok':'late',`${esc(refName('people',x.por)||'Alguien')} ${x.accion}${x.nivel&&ns&&ns.length>1?` (nivel ${x.nivel})`:''}`,fmtAt(x.at)+(x.nota?` · «${esc(x.nota)}»`:''))).join('')
     +(pend&&ns&&k<ns.length?ns.slice(k).map((s,i)=>nodo(i?'fut':'now',`${ns.length>1?`Nivel ${k+i+1} · `:''}${esc(nomNivel(s))}`,i?'después':'pendiente')).join(''):'');
   return `<div class="wide aprobs"><b>Aprobaciones</b>${nv}${hist?`<ol class="hilo compacto">${hist}</ol>`:''}</div>`;
 }
@@ -3482,11 +3542,7 @@ function carpetaHTML(pid){
 <style>body{font:14px/1.45 "IBM Plex Sans",system-ui,sans-serif;color:#0B2E4F;background:#FFFFFF;margin:0;padding:24px;max-width:960px}h1{font:700 24px Rubik,system-ui,sans-serif;letter-spacing:-.02em;margin:0 0 4px}h2{font:600 17px Rubik,system-ui,sans-serif;margin:24px 0 8px}
 .meta{color:#335B82;margin:0 0 16px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #D6E7F5;padding:6px 8px;text-align:left;vertical-align:top}th{background:#EEF5FB;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
 .s{font-size:12px;border-radius:99px;padding:2px 8px;margin-left:6px}.done{color:#1E7A48}.prog{color:#8A5B00}.stuck{color:#B23A33}.s.done{background:#E3F2E9}.s.prog{background:#FBF1D6}.s.stuck{background:#F8E1DF}
-footer{margin-top:24px;color:#335B82;font-size:12px}@media print{body{padding:0}a{color:inherit}}</style><link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0B2E4F">
-<link rel="icon" href="icono.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icono-192.png">
-</head><body>
+footer{margin-top:24px;color:#335B82;font-size:12px}@media print{body{padding:0}a{color:inherit}}</style></head><body>
 <h1>Carpeta de acreditación</h1><p class="meta"><b>${esc(p.name)}</b>${p.rut?` · RUT ${esc(p.rut)}`:''}${p.role?` · ${esc(p.role)}`:''}${p.area?` · ${esc(p.area)}`:''}${p.ingreso?` · ingreso ${fmt(p.ingreso)}`:''}<br>${esc(S.company||'')}</p>
 ${cls.map(tabla).join('')}
 ${propios.length?`<h2>Documentos de la ficha</h2><ul>${propios.map(a=>`<li>${adj(a)}${a.vence?` · vence ${fmt(a.vence)}`:''}</li>`).join('')}</ul>`:''}
@@ -3644,11 +3700,7 @@ function etiquetasHTML(ps){
   return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Etiquetas QR · ${esc(S.company||'')}</title>
 <style>body{font:13px "IBM Plex Sans",system-ui,sans-serif;color:#0B2E4F;margin:16px}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
 .e{border:1px dashed #BCC9C6;border-radius:8px;padding:10px;text-align:center;break-inside:avoid}.e svg{width:120px;height:120px}.c{font:700 15px Rubik,system-ui,sans-serif;margin-top:4px}.n{color:#335B82}
-@media print{body{margin:0}.e{border-color:#999}}</style><link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0B2E4F">
-<link rel="icon" href="icono.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icono-192.png">
-</head><body><div class="g">
+@media print{body{margin:0}.e{border-color:#999}}</style></head><body><div class="g">
 ${ps.map(p=>`<div class="e">${qrSVG(qrTexto(p),3)}<div class="c">${esc(p.codigo||'')}</div><div class="n">${esc(p.nombre)}</div><div class="n">${esc(refName('bodegas',p.bodega))}</div></div>`).join('')}
 </div></body></html>`;
 }
@@ -4067,11 +4119,7 @@ function informeHTML(p,desde,hasta){
 table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid #D6E7F5;padding:6px 8px;text-align:left;vertical-align:top}th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#335B82}
 .b{display:inline-block;width:160px;height:8px;background:#EEF5FB;border-radius:99px;overflow:hidden;vertical-align:middle;margin-right:8px}.b span{display:block;height:100%;background:#1F9D61}
 .dia{border:1px solid #D6E7F5;border-radius:10px;padding:10px 14px;margin:10px 0;break-inside:avoid}.dia img{width:31%;margin:4px 1% 0 0;border-radius:6px;object-fit:cover;aspect-ratio:4/3}.inc{color:#B23A33}
-footer{margin-top:28px;color:#335B82;font-size:12px}@media print{body{padding:0}h2{break-after:avoid}}</style><link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0B2E4F">
-<link rel="icon" href="icono.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icono-192.png">
-</head><body>
+footer{margin-top:28px;color:#335B82;font-size:12px}@media print{body{padding:0}h2{break-after:avoid}}</style></head><body>
 <h1>Informe de avance</h1><p class="meta"><b>${esc(p.name)}</b>${p.client?` · ${esc(p.client)}`:''}${p.site?` · ${esc(p.site)}`:''}<br>Período: ${fmt(desde)} al ${fmt(hasta)} · ${esc(S.company||'')}</p>
 <div class="kp"><div class="k">Avance general<b>${pc}%</b></div><div class="k">Tareas terminadas<b>${hechas.length} de ${ts.length}</b></div><div class="k">Terminadas en el período<b>${enPeriodo.length}</b></div><div class="k">Días con registro<b>${es.length}</b></div></div>
 <h2>Avance por fase</h2><table><tbody>${fases.map(x=>`<tr><td>${esc(x.f)}</td><td>${barra(x.n?Math.round(x.d/x.n*100):0)}${x.d} de ${x.n}</td></tr>`).join('')}</tbody></table>
@@ -4127,11 +4175,7 @@ function edpHTML(r){
   const contrato=+p?.contrato||0,acum=todos.filter(x=>(x.num||'')<=(r.num||'')).reduce((a,x)=>a+montoEDP(x),0),m=montoEDP(r);
   const ts=S.tasks.filter(t=>t.projectId===r.proyecto&&t.name),pc=ts.length?Math.round(ts.filter(t=>t.status==='done').length/ts.length*100):0;
   return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>${esc(r.num)} · ${esc(p?.name||'')}</title>
-<style>body{font:14px/1.5 "IBM Plex Sans",system-ui,sans-serif;color:#0B2E4F;margin:0 auto;padding:24px;max-width:820px}h1{font:700 24px Rubik,system-ui,sans-serif;margin:0}table{border-collapse:collapse;width:100%;margin-top:16px}th,td{border:1px solid #D6E7F5;padding:6px 8px;text-align:left}td.r,th.r{text-align:right}th{background:#EEF5FB;font-size:12px;text-transform:uppercase}.meta{color:#335B82}.firma{display:flex;gap:40px;margin-top:60px}.firma div{flex:1;border-top:1px solid #335B82;padding-top:6px;text-align:center;color:#335B82}</style><link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0B2E4F">
-<link rel="icon" href="icono.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icono-192.png">
-</head><body>
+<style>body{font:14px/1.5 "IBM Plex Sans",system-ui,sans-serif;color:#0B2E4F;margin:0 auto;padding:24px;max-width:820px}h1{font:700 24px Rubik,system-ui,sans-serif;margin:0}table{border-collapse:collapse;width:100%;margin-top:16px}th,td{border:1px solid #D6E7F5;padding:6px 8px;text-align:left}td.r,th.r{text-align:right}th{background:#EEF5FB;font-size:12px;text-transform:uppercase}.meta{color:#335B82}.firma{display:flex;gap:40px;margin-top:60px}.firma div{flex:1;border-top:1px solid #335B82;padding-top:6px;text-align:center;color:#335B82}</style></head><body>
 <h1>Estado de pago ${esc(r.num)}</h1><p class="meta">${esc(S.company||'')} · ${fmt(r.fecha||TODAY)}<br>Proyecto: <b>${esc(p?.name||'')}</b>${p?.client?` · Cliente: ${esc(p.client)}`:''}${p?.site?` · ${esc(p.site)}`:''}</p>
 <table><thead><tr><th>Hito</th><th class="r">Monto neto</th><th class="r">IVA 19%</th><th class="r">Total</th></tr></thead><tbody><tr><td>${esc(r.hito)}</td><td class="r">${fmtMoney(m)}</td><td class="r">${fmtMoney(Math.round(m*.19))}</td><td class="r"><b>${fmtMoney(Math.round(m*1.19))}</b></td></tr></tbody></table>
 <table><thead><tr><th>Estado de pago</th><th>Hito</th><th class="r">Monto neto</th><th>Estado</th></tr></thead><tbody>${todos.map(x=>`<tr><td>${esc(x.num)}</td><td>${esc(x.hito)}</td><td class="r">${fmtMoney(montoEDP(x))}</td><td>${esc(edpSt(x).label)}</td></tr>`).join('')}</tbody></table>
@@ -4347,11 +4391,13 @@ function viewRendir(){
       <section class="box"><h2>Mis gastos por estado</h2>${Object.keys(est).length?barras(Object.entries(est).map(([n,v])=>({n,v})),fmtMoney,x=>REND_TONO[x.n]||'todo'):empty('Aún no tienes gastos.')}</section>
         `;
     if(aprueba)cuerpo=cuerpo.replace('<div class="g2">',`<section class="box"><h2>Lo que reviso</h2><div class="kpis unidas ajusta tres">${kpi('Por revisar',porAprobar.length,porAprobar.length?'bad':'','Informes, gastos y solicitudes')}${kpi('Gastos en revisión',fmtMoney(sum(revisa,clp)),'money',cuenta(revisa.length,'gasto','gastos'))}${kpi('Parecidos a otros',dupR.length,dupR.length?'bad':'','Revísalos antes de aprobar')}</div></section><div class="g2">`);
+  }else if(S.ui.grev&&S.d.informes.some(i=>i.id===S.ui.grev&&canSee('informes',i,'contabilidad'))){
+    cuerpo=revisionView(S.d.informes.find(i=>i.id===S.ui.grev));
   }else{
     const inf=porAprobar.filter(x=>x.ent!=='fondos'),sol=porAprobar.filter(x=>x.ent==='fondos');
     const porDep=lvl('contabilidad')>=3?S.d.fondos.filter(f=>f.estado==='Aprobada'):[];
     const filaA=x=>`<div class="appr"><span class="modtag">${{rends:'Gasto',fondos:'Fondos',informes:'Informe'}[x.ent]}</span><span class="tt" data-rec="${x.ent}:${x.r.id}:contabilidad"><span class="tname">${esc(x.txt)}</span><span class="hint">${esc(refName('people',x.who))} · ${esc(x.det)}</span>${x.ent!=='rends'?`<span class="hint">Flujo: ${flujoTxt(x.ent,x.r)}</span>`:dupTag(x.r)}${x.ent==='informes'?dupInforme(x.r):''}</span>
-      <span class="bar-actions">${x.ent==='informes'?`<button class="btn sm" data-rec="informes:${x.r.id}:contabilidad">Revisar gastos</button>`:`<button class="btn sm" data-recact="${x.ent}:${x.r.id}:ok">Aprobar</button><button class="btn ghost sm" data-recact="${x.ent}:${x.r.id}:no">Rechazar</button>`}</span></div>`;
+      <span class="bar-actions">${x.ent==='informes'?`<button class="btn sm" data-grev="${x.r.id}">Revisar gasto a gasto</button>`:`<button class="btn sm" data-recact="${x.ent}:${x.r.id}:ok">Aprobar</button><button class="btn ghost sm" data-recact="${x.ent}:${x.r.id}:no">Rechazar</button>`}</span></div>`;
     cuerpo=`<section class="box"><h2>${sub==='informes'?'Revisión de informes':'Revisión de solicitudes'} <span class="hint">${(sub==='informes'?inf:sol).length}</span></h2>${subnavG}
       ${sub==='informes'?(inf.length?inf.map(filaA).join(''):empty('No tienes informes ni gastos esperando tu revisión.'))
         :(sol.length?sol.map(filaA).join(''):empty('No tienes solicitudes de fondos esperando tu revisión.'))+(porDep.length?`<h3>Aprobadas, por depositar <span class="hint">${porDep.length}</span></h3>${porDep.map(f=>`<div class="appr"><span class="modtag">Fondos</span><span class="tt" data-rec="fondos:${f.id}:contabilidad"><span class="tname">${esc(f.num||'')} · ${esc(f.motivo||'')}</span><span class="hint">${esc(refName('people',f.persona))} · ${fmtMoney(+f.monto||0,f.moneda||'CLP')}</span></span><span class="bar-actions"><button class="btn sm" data-recact="fondos:${f.id}:dep">Marcar depositada hoy</button></span></div>`).join('')}`:'')}</section>`;
@@ -4457,11 +4503,14 @@ function enviarInforme(inf){
   avisarAprobadores('informes',inf,`${ENT.informes.title(inf)} espera tu revisión`);
   if(c.sinFoto)setTimeout(()=>toast(`Ojo: ${cuenta(c.sinFoto,'gasto va','gastos van')} sin foto del documento`,5000),400);
 }
-function aprobarInforme(inf){
-  aprobar('informes',inf);
+function aprobarInforme(inf,nota,revisado){
+  // Se aprueba gasto a gasto (revision.js): desde la ficha, el botón lleva a la revisión
+  if(!revisado&&!SIMULA&&porRevisar(inf).length){S.ui.grev=inf.id;S.ui.grevg='';S.ui.tabs.rendir='aprobador';closeModal();go('rendir');toast('Revisa cada gasto del informe antes de aprobarlo');return false}
+  aprobar('informes',inf,nota?{nota}:null);
   if(inf.estado==='Aprobado')gastosDe(inf).filter(x=>x.estado==='Pendiente').forEach(x=>x.estado='Aprobada');
 }
-function devolverInforme(inf){anotar(inf,{accion:'devolvió'});inf.estado='Borrador'}
+function devolverInforme(inf,nota){anotar(inf,Object.assign({accion:'devolvió'},nota?{nota}:null));inf.estado='Borrador';
+  if(!SIMULA&&inf.persona!==S.me)S.d.avisos.unshift({id:uid(),para:inf.persona,texto:`${ENT.informes.title(inf)} volvió para corregir${nota?`: «${nota.length>80?nota.slice(0,80)+'…':nota}»`:''}`,ent:'informes',reg:inf.id,regla:'',at:new Date().toISOString(),leido:false})}
 function cerrarInforme(inf){
   inf.estado='Cerrado';
   gastosDe(inf).filter(x=>x.estado==='Aprobada').forEach(x=>x.estado='Reembolsada');
@@ -4590,6 +4639,128 @@ function resuelveGasto(ent,r){
   return out;
 }
 ['rends','fondos','informes'].forEach(e=>{ENT[e].resuelve=r=>resuelveGasto(e,r)});
+/* ===== Revisión de un informe de gastos, gasto a gasto (pedido de Miguel, 26-10-2026) =====
+   Quien revisa el paso pendiente del informe (Gastos → Aprobador → Revisión de informes) entra al informe y ve cada gasto
+   con su foto y sus datos. Aprueba o rechaza uno por uno, y puede corregir cualquier dato del gasto (desde el 01-11-2026,
+   pedido de Miguel; antes solo la categoría, la nota de venta y el centro de costo). Cuando todos quedan revisados, «Terminar revisión» abre un cuadro para dejarle un comentario al siguiente
+   aprobador del flujo y pasa el informe al paso siguiente (o lo deja aprobado si era el último).
+   - Lo revisado en cada paso queda en el gasto: r.revisiones = [{vuelta, nivel, por, at, accion, nota, cambios}]
+     (accion: 'aprobó', 'rechazó' o 'editó'). Solo se agregan entradas; en la base, rendicion.revisiones (jsonb).
+   - vuelta = rechazos y devoluciones que lleva el informe: al devolverlo para corregir, la revisión parte de nuevo.
+   - El comentario para el siguiente va en el historial del informe (inf.aprobaciones[].nota).
+   La base aplica lo mismo (modelo/permisos.sql: hilvanta.rendicion_reglas). */
+const vueltaInf=inf=>(inf.aprobaciones||[]).filter(x=>x.accion!=='aprobó').length;
+const pasoInf=inf=>ronda(inf)+1;
+const revisionDe=(g,inf)=>{const v=vueltaInf(inf),n=pasoInf(inf);return [...(g.revisiones||[])].reverse().find(x=>x.vuelta===v&&x.nivel===n&&['aprobó','rechazó'].includes(x.accion))||null};
+const porRevisar=inf=>gastosDe(inf).filter(g=>g.estado!=='Rechazada'&&!revisionDe(g,inf));
+const revisaInforme=inf=>!!inf&&inf.estado==='Enviado'&&puedeAprobar('informes',inf,'contabilidad');
+// Datos que corrige quien revisa (no cambia de quién es el gasto, su informe, su flujo ni lo reembolsado en pesos)
+const CAMBIA_REVISOR=[['fecha','Fecha del documento','date'],['comercio','Proveedor'],['rutComercio','RUT del proveedor'],
+  ['tipoDoc','Tipo de documento','select',()=>TIPO_DOC_GASTO],['numDoc','N° de documento'],['moneda','Moneda','select',()=>MONEDAS_GASTO],
+  ['monto','Monto','number'],['categoria','Categoría','select',()=>gastoCats()],['proyecto','Nota de venta','ref'],['centro','Centro de costo','ref'],['nota','Nota','text']];
+const REF_REVISOR={proyecto:'projects',centro:'centros'};
+function campoRevisor([k,nom,tipo,opts],g){
+  const v=g[k]??'',id=`rev_${k}`,a=`id="${id}" data-revcampo="${k}"`;
+  if(tipo==='select'){const l=[...new Set([...opts(),v].filter(Boolean))];return `<label>${nom}<select ${a}>${l.map(x=>`<option ${x===v?'selected':''}>${esc(x)}</option>`).join('')}</select></label>`}
+  if(tipo==='ref'){const l=k==='proyecto'?S.projects.filter(p=>p.status!=='cerrado'||p.id===v).map(p=>[p.id,nombreProy(p)]):S.d.centros.filter(x=>x.activo!=='No'||x.id===v).map(x=>[x.id,(x.codigo?x.codigo+' · ':'')+x.nombre]);
+    return `<label>${nom}<select ${a}><option value="">—</option>${l.map(([i,n])=>`<option value="${i}" ${i===v?'selected':''}>${esc(n)}</option>`).join('')}</select></label>`}
+  return `<label>${nom}<input ${a} type="${tipo==='number'?'number':tipo==='date'?'date':'text'}"${tipo==='number'?' min="0" step="any" inputmode="decimal"':''} value="${esc(String(v))}"></label>`;
+}
+function anotarRevision(g,inf,accion,extra){(g.revisiones=g.revisiones||[]).push(Object.assign({vuelta:vueltaInf(inf),nivel:pasoInf(inf),por:S.me,at:new Date().toISOString(),accion},extra||{}))}
+// Quién sigue en el flujo después del paso pendiente (para el texto del botón y del cuadro de comentario)
+function siguienteDe(inf){const ns=nivelesDe('informes',inf)||[],k=ronda(inf);return ns[k+1]?nomNivel(ns[k+1]):''}
+const fotoGasto=g=>ultimasVersiones(S.d.adjuntos.filter(a=>a.ent==='rends'&&a.reg===g.id)).find(a=>/^image\//.test(a.tipo||''))||ultimasVersiones(S.d.adjuntos.filter(a=>a.ent==='rends'&&a.reg===g.id))[0]||null;
+// Comentarios que dejaron los pasos anteriores (y la persona, si el informe volvió de una corrección)
+function comentariosInf(inf){
+  const l=(inf.aprobaciones||[]).filter(x=>x.nota);if(!l.length)return '';
+  return `<div class="rev-coment"><b>Comentarios de la revisión</b>${l.map(x=>`<p><span class="hint">${esc(refName('people',x.por)||'Alguien')} ${esc(x.accion)}${x.nivel?` (paso ${x.nivel})`:''} · ${fmtAt(x.at)}</span>«${esc(x.nota)}»</p>`).join('')}</div>`;
+}
+function revisionView(inf){
+  const gs=gastosDe(inf),rev=revisaInforme(inf),faltan=porRevisar(inf),c=informeCuentas(inf);
+  const sel=gs.find(g=>g.id===S.ui.grevg)||faltan[0]||gs[0]||null;
+  const estadoG=g=>{if(g.estado==='Rechazada')return ['stuck','Rechazado'];const r=revisionDe(g,inf);return r?['done',r.por===S.me?'Aprobado por ti':'Aprobado']:['prog','Por revisar']};
+  const item=g=>{const [t,txt]=estadoG(g);return `<button type="button" class="rev-item ${sel&&sel.id===g.id?'on':''}" data-grevg="${g.id}" aria-pressed="${!!(sel&&sel.id===g.id)}">
+    <span class="rev-it-tx"><b>${esc(gastoNombre(g))}</b><span class="hint">${fmt(g.fecha)} · ${esc(g.categoria||'Sin categoría')}</span></span>
+    <span class="rev-it-der"><span class="num nw">${fmtMoney(+g.monto||0,g.moneda||'CLP')}</span>${tonePill({tone:t,label:txt})}</span></button>`};
+  let det=empty('Este informe no tiene gastos.');
+  if(sel){
+    const f=fotoGasto(sel),edita=rev&&sel.estado==='Pendiente',[t,txt]=estadoG(sel);
+    const dato=(k,v)=>v?`<div><dt>${k}</dt><dd>${v}</dd></div>`:'';
+    const hist=(sel.revisiones||[]).map(x=>`<li><span class="hint">${esc(refName('people',x.por)||'Alguien')} ${esc(x.accion)} (paso ${x.nivel}) · ${fmtAt(x.at)}</span>${x.cambios?` ${esc(x.cambios)}`:''}${x.nota?` «${esc(x.nota)}»`:''}</li>`).join('');
+    det=`<div class="rev-det-cab"><h3>${esc(gastoNombre(sel))}</h3>${tonePill({tone:t,label:txt})}</div>
+      ${dupAviso(sel)}
+      <div class="rev-det-cols"><div class="rev-foto">${f&&f.datos&&/^image\//.test(f.tipo||'')?`<img src="${esc(f.datos)}" alt="Foto del documento de ${esc(gastoNombre(sel))}">`
+        :f?`<div class="rev-sinfoto">${I(ICON.doc)}<span>${docLink(f)}</span></div>`:`<div class="rev-sinfoto late">${I(ICON.receipt)}<span>Sin foto del documento</span></div>`}</div>
+      <dl class="rev-datos">${dato('Monto',`<b class="num">${fmtMoney(+sel.monto||0,sel.moneda||'CLP')}</b>`)}${dato('Fecha',fmt(sel.fecha))}${dato('Proveedor',esc(sel.comercio||''))}${dato('RUT',esc(sel.rutComercio||''))}
+        ${dato('Documento',esc([sel.tipoDoc,sel.numDoc].filter(Boolean).join(' N° ')))}${dato('Categoría',esc(sel.categoria||''))}${dato('Nota de venta',esc(refName('projects',sel.proyecto)||''))}${dato('Centro de costo',esc(refName('centros',sel.centro)||''))}${dato('Nota',esc(sel.nota||''))}</dl></div>
+      ${edita?`<details class="rev-edita" ${S.ui.grevEd?'open':''}><summary><b>Corregir los datos del gasto</b></summary><div class="rev-campos">${CAMBIA_REVISOR.map(c=>campoRevisor(c,sel)).join('')}</div>
+        <p class="hint">Cada cambio se guarda al tiro y queda en el historial del gasto, con el valor anterior.</p></details>
+      <label class="rev-nota">Comentario sobre este gasto (opcional)<textarea id="rev_nota" rows="2" placeholder="Ej: la boleta no corresponde a la faena"></textarea></label>
+      <div class="bar-actions"><button type="button" class="btn rev-ok" data-grevok="${sel.id}">${I(ICON.check)}Aprobar gasto</button><button type="button" class="btn ghost rev-no" data-grevno="${sel.id}">Rechazar gasto</button>
+        ${lvl('contabilidad')>=3?`<button type="button" class="btn ghost sm" data-rec="rends:${sel.id}:contabilidad">Abrir la ficha completa</button>`:''}</div>`
+      :sel.estado==='Pendiente'&&!rev?'<p class="hint">Solo puede aprobar o rechazar quien revisa el paso pendiente.</p>':''}
+      ${hist?`<details class="rev-hist"><summary>Historial de este gasto</summary><ul>${hist}</ul></details>`:''}`;
+  }
+  const hechos=gs.filter(g=>g.estado==='Rechazada'||revisionDe(g,inf)).length,sig=siguienteDe(inf);
+  return `<section class="box rev"><div class="toolbar"><button type="button" class="btn ghost sm" data-grev="">← Volver a la lista</button>
+      <h2>${esc(inf.num||'')} · ${esc(inf.titulo||'')}</h2>${tonePill(ENT.informes.status(inf))}</div>
+    <div class="rev-cab"><span class="who">${av(inf.persona)}<span><b>${esc(refName('people',inf.persona))}</b><span class="hint">${fmt(inf.fecha)}${inf.proyecto?` · ${esc(refName('projects',inf.proyecto))}`:''}</span></span></span>
+      <span><span class="hint">Total</span><b class="money">${fmtMoney(c.rendido)}</b></span>
+      ${c.asignado?`<span><span class="hint">Fondos asignados</span><b>${fmtMoney(c.asignado)}</b></span>`:''}
+      <span class="rev-flujo"><span class="hint">Flujo de aprobación</span>${flujoTxt('informes',inf)}</span></div>
+    ${comentariosInf(inf)}
+    <div class="rev-progreso" role="progressbar" aria-valuemin="0" aria-valuemax="${gs.length}" aria-valuenow="${hechos}" aria-label="Gastos revisados"><span style="width:${gs.length?Math.round(hechos/gs.length*100):0}%"></span></div>
+    <p class="hint">${hechos===gs.length?'Revisaste todos los gastos.':`Revisados ${hechos} de ${gs.length}.`}${c.sinFoto?` ${cuenta(c.sinFoto,'gasto va','gastos van')} sin foto.`:''}</p>
+    <div class="rev-cols"><div class="rev-lista" role="list">${gs.map(item).join('')}</div><div class="rev-det">${det}</div></div>
+    ${rev?`<div class="rev-pie"><button type="button" class="btn ghost rev-dev" data-grevdev="${inf.id}">Devolver para corregir</button>
+      <button type="button" class="btn" data-grevfin="${inf.id}" ${faltan.length?'disabled':''}>${sig?`Terminar revisión y enviar a ${esc(sig)}`:'Terminar revisión y aprobar el informe'}</button>
+      ${faltan.length?`<span class="hint">Te ${faltan.length===1?'falta':'faltan'} ${cuenta(faltan.length,'gasto','gastos')} por revisar.</span>`:''}</div>`:''}
+  </section>`;
+}
+// Cuadro para el comentario al terminar (o al devolver): se guarda en el historial del informe
+function terminarRevision(inf,devolver){
+  const sig=siguienteDe(inf),para=devolver?refName('people',inf.persona):sig;
+  openModal(devolver?'Devolver para corregir':sig?`Enviar a ${esc(sig)}`:'Aprobar el informe',null,{},o=>{
+    const nota=String(o.nota||'').trim();
+    if(devolver){devolverInforme(inf,nota);addLog(`${meName()} devolvió para corregir el ${ENT.informes.title(inf)}`)}
+    else{aprobarInforme(inf,nota,true);addLog(`${meName()} revisó el ${ENT.informes.title(inf)} (paso ${ronda(inf)})`)}
+    S.ui.grev='';S.ui.grevg='';
+    setTimeout(()=>toast(devolver?`Devuelto a ${refName('people',inf.persona)} para corregir`:inf.estado==='Aprobado'?'Informe aprobado':`Enviado a ${sig}`),50);
+  },null,'',null,`<p class="wide">${devolver?`El informe vuelve a ${esc(para)} para que lo corrija.`:sig?`El informe pasa a ${esc(sig)}, el siguiente paso del flujo.`:'Eres el último paso del flujo: el informe queda aprobado y sus gastos, listos para reembolsar.'}</p>
+    <label class="wide">${devolver?`Qué debe corregir ${esc(para)}${' *'}`:para?`Comentario para ${esc(para)} (opcional)`:'Comentario (opcional)'}<textarea name="nota" id="rev_fin_nota" rows="4" ${devolver?'required':''} placeholder="${devolver?'Ej: falta la foto de la boleta del peaje':'Ej: el gasto de alojamiento se aprobó por la emergencia en faena'}"></textarea></label>`);
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest&&e.target.closest('[data-grev],[data-grevg],[data-grevok],[data-grevno],[data-grevfin],[data-grevdev]');if(!t||t.closest('#modal'))return;e.preventDefault();
+  if(t.dataset.grev!==undefined){S.ui.grev=t.dataset.grev;S.ui.grevg='';if(t.dataset.grev){S.ui.tabs.rendir='aprobador';if(S.ui.route!=='rendir')return go('rendir')}return renderMain()}
+  if(t.dataset.grevg){S.ui.grevg=t.dataset.grevg;return renderMain()}
+  const inf=S.d.informes.find(i=>i.id===S.ui.grev);
+  if(!revisaInforme(inf))return toast('No te toca revisar este informe');
+  if(t.dataset.grevfin||t.dataset.grevdev){if(t.dataset.grevfin&&porRevisar(inf).length)return toast('Revisa todos los gastos antes de terminar');return terminarRevision(inf,!!t.dataset.grevdev)}
+  const g=S.d.rends.find(x=>x.id===(t.dataset.grevok||t.dataset.grevno));if(!g||g.informe!==inf.id||g.estado!=='Pendiente')return;
+  const nota=($('rev_nota')?.value||'').trim();
+  if(t.dataset.grevok){anotarRevision(g,inf,'aprobó',nota?{nota}:null);addLog(`${meName()} aprobó el gasto ${gastoNombre(g)} del ${ENT.informes.title(inf)}`)}
+  else{rechazar('rends',g);anotarRevision(g,inf,'rechazó',nota?{nota}:null);addLog(`${meName()} rechazó el gasto ${gastoNombre(g)} del ${ENT.informes.title(inf)}`)}
+  // pasa solo al siguiente gasto por revisar
+  S.ui.grevg=(porRevisar(inf)[0]||g).id;commit();toast(t.dataset.grevok?'Gasto aprobado':'Gasto rechazado');
+});
+// Corrección de quien revisa: cualquier dato del gasto (queda en el historial del gasto, con el valor anterior)
+document.addEventListener('change',e=>{
+  const s=e.target.closest&&e.target.closest('[data-revcampo]');if(!s)return;
+  const inf=S.d.informes.find(i=>i.id===S.ui.grev),g=S.d.rends.find(x=>x.id===S.ui.grevg)||(inf&&porRevisar(inf)[0]);
+  if(!revisaInforme(inf)||!g||g.informe!==inf.id||g.estado!=='Pendiente')return;
+  const k=s.dataset.revcampo,[,nom,tipo]=CAMBIA_REVISOR.find(x=>x[0]===k)||[],ref=REF_REVISOR[k];if(!nom)return;
+  const nuevo=tipo==='number'?(s.value===''?'':+s.value):s.value.trim(),antes=g[k]??'';
+  if(tipo==='number'&&!(+nuevo>0)){s.value=antes;return toast('El monto debe ser mayor que cero')}
+  if(String(antes)===String(nuevo))return;
+  const txt=v=>ref?refName(ref,v)||'—':k==='monto'?fmtMoney(+v||0,g.moneda||'CLP'):k==='fecha'?(v?fmt(v):'—'):String(v||'—');
+  const cambio=`${nom}: ${txt(antes)} → ${txt(nuevo)}`;
+  g[k]=nuevo;if(k==='comercio'||k==='categoria')g.motivo=g.comercio||g.categoria||'Gasto';
+  anotarRevision(g,inf,'editó',{cambios:cambio});S.ui.grevg=g.id;commit();toast(`Cambio guardado: ${nom.toLowerCase()}`);
+});
+// El cuadro de corrección queda abierto entre un cambio y otro (cada cambio vuelve a dibujar la revisión)
+document.addEventListener('toggle',e=>{if(e.target.matches&&e.target.matches('.rev-edita'))S.ui.grevEd=e.target.open},true);
+// Tocar una pestaña de Gastos vuelve a la lista (la revisión queda abierta solo mientras se está en ella)
+document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('#main [data-tab]');if(t&&S.ui.route==='rendir')S.ui.grev=''},true);
 /* ===== Lector del código de barras de boletas y facturas (pedido de Miguel, 20-10-2026) =====
    Las boletas y facturas electrónicas chilenas traen el timbre electrónico del SII: un código PDF417 con un XML (TED)
    que dice el RUT del emisor (RE), el tipo de documento (TD), el folio (F), la fecha de emisión (FE), el monto total
@@ -4877,11 +5048,7 @@ function certificadoHTML(tipo,pid){
   const cuerpo=tipo==='vacaciones'?`<p>Se certifica que don(ña) <b>${esc(p.name)}</b>${p.rut?`, RUT ${esc(p.rut)}`:''}, tiene al ${fmt(TODAY)} un saldo de <b>${v==null?'—':String(v).replace('.',',')} días hábiles</b> de feriado legal, calculado con 1,25 días por mes trabajado desde el ${fmt(p.ingreso)} y descontadas las vacaciones aprobadas (${tomadosAnio(pid)} días este año).</p>`
     :`<p>Se certifica que don(ña) <b>${esc(p.name)}</b>${p.rut?`, RUT ${esc(p.rut)}`:''}, presta servicios en ${esc(S.company||'la empresa')} desde el <b>${fmt(p.ingreso)}</b>, con contrato <b>${esc((p.contrato||'').toLowerCase())}</b>, en el cargo de <b>${esc(p.role||'—')}</b>${p.area?`, área ${esc(p.area)}`:''}${p.estado==='Activo'?', y se encuentra vigente a la fecha':''}.</p>`;
   return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Certificado · ${esc(p.name)}</title>
-<style>body{font:15px/1.7 "IBM Plex Sans",system-ui,sans-serif;color:#0B2E4F;margin:0 auto;padding:48px;max-width:720px}h1{font:700 22px Rubik,system-ui,sans-serif;text-align:center;margin:24px 0}.emp{font:700 18px Rubik,system-ui,sans-serif;color:#1A62A0}.firma{margin-top:96px;text-align:center}.firma div{display:inline-block;border-top:1px solid #335B82;padding-top:6px;min-width:260px;color:#335B82}.pie{margin-top:48px;color:#335B82;font-size:12px}</style><link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0B2E4F">
-<link rel="icon" href="icono.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icono-192.png">
-</head><body>
+<style>body{font:15px/1.7 "IBM Plex Sans",system-ui,sans-serif;color:#0B2E4F;margin:0 auto;padding:48px;max-width:720px}h1{font:700 22px Rubik,system-ui,sans-serif;text-align:center;margin:24px 0}.emp{font:700 18px Rubik,system-ui,sans-serif;color:#1A62A0}.firma{margin-top:96px;text-align:center}.firma div{display:inline-block;border-top:1px solid #335B82;padding-top:6px;min-width:260px;color:#335B82}.pie{margin-top:48px;color:#335B82;font-size:12px}</style></head><body>
 <div class="emp">${esc(S.company||'')}</div><h1>${tipo==='vacaciones'?'Certificado de saldo de vacaciones':'Certificado de antigüedad laboral'}</h1>
 ${cuerpo}<p>Se extiende el presente certificado a petición del interesado para los fines que estime convenientes.</p><p>${fmt(TODAY)}</p>
 <div class="firma"><div>Recursos humanos<br>${esc(S.company||'')}</div></div><p class="pie">Emitido con Hilvanta por ${esc(meName())}.</p></body></html>`;
@@ -5670,11 +5837,7 @@ function ofertaBloque(r){
 }
 function ofertaHTML(r){
   const x=ofertaCalc(r),cli=S.d.contacts.find(c=>c.id===r.cliente);
-  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Oferta ${esc(r.num)}</title><style>body{font:14px/1.5 "IBM Plex Sans",Arial,sans-serif;color:#0B2E4F;max-width:760px;margin:32px auto;padding:0 24px}h1{font:700 26px Rubik,Arial;letter-spacing:-.02em;margin:0}h2{font:700 17px Rubik,Arial;margin:24px 0 8px}.meta{color:#335B82}table{width:100%;border-collapse:collapse}td,th{padding:6px 8px;border-bottom:1px solid #D6E7F5;text-align:left}.r{text-align:right}.tot td{font-weight:700;border-top:2px solid #0B2E4F}</style><link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0B2E4F">
-<link rel="icon" href="icono.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icono-192.png">
-</head><body>
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Oferta ${esc(r.num)}</title><style>body{font:14px/1.5 "IBM Plex Sans",Arial,sans-serif;color:#0B2E4F;max-width:760px;margin:32px auto;padding:0 24px}h1{font:700 26px Rubik,Arial;letter-spacing:-.02em;margin:0}h2{font:700 17px Rubik,Arial;margin:24px 0 8px}.meta{color:#335B82}table{width:100%;border-collapse:collapse}td,th{padding:6px 8px;border-bottom:1px solid #D6E7F5;text-align:left}.r{text-align:right}.tot td{font-weight:700;border-top:2px solid #0B2E4F}</style></head><body>
 <h1>Oferta ${esc(r.num)} · ${esc(r.nombre||'')}</h1><p class="meta">${esc(S.company||'')} · ${fmt(r.fecha||TODAY)}${r.validez?` · válida hasta el ${fmt(r.validez)}`:''}<br>Cliente: <b>${esc(cli?.nombre||'')}</b>${r.sitio?` · ${esc(r.sitio)}`:''}</p>
 ${x.pl?`<h2>Alcance</h2><ul>${x.pl.fases.map(f=>`<li><b>${esc(f.nombre)}</b>: ${f.tareas.map(t=>esc(t.nombre)).join(', ')}</li>`).join('')}</ul><p>Plazo estimado: ${x.dur} días corridos${r.inicio?` desde el ${fmt(r.inicio)}`:''}.</p>`:''}
 <h2>Precio</h2><table><tr><td>Valor neto</td><td class="r">${fmtMoney(x.precio)}</td></tr><tr><td>IVA 19 %</td><td class="r">${fmtMoney(Math.round(x.precio*.19))}</td></tr><tr class="tot"><td>Total</td><td class="r">${fmtMoney(Math.round(x.precio*1.19))}</td></tr></table>
@@ -5806,6 +5969,149 @@ function cotizarReposicion(pid){
   editRec('cotizaciones',cc.id,null,'compras');toast(`${cc.num} creado con los últimos precios: actualízalos con las cotizaciones nuevas`);
 }
 document.addEventListener('click',e=>{let b;if(b=e.target.closest('[data-repoc]'))crearOCReposicion(b.dataset.repoc);else if(b=e.target.closest('[data-repcot]'))cotizarReposicion(b.dataset.repcot)});
+/* ===== Notas de crédito y guías de despacho (pedido de Miguel, 26-10-2026) =====
+   Opciones de creación que se encadenan, como en Nubox y Defontana:
+     OC → «Registrar la factura del proveedor» (factura de proveedor ligada a la OC, con sus líneas)
+     Factura → «Crear nota de crédito» (anula la factura, corrige el monto, devolución o descuento)
+     Guía de despacho → «Emitir» (descuenta el stock una sola vez) → «Facturar» (la factura de venta no vuelve a descontar)
+   Son registros internos: emitirlos al SII llega con el proveedor de facturación autorizado.
+   - Nota de crédito (ENT.ncs, Contabilidad): factura, N°, fecha, motivo y neto, en la moneda de la factura. Rebaja el
+     saldo de la factura (docSaldo) y, en el resultado del proyecto, las ventas o las compras (projFin). Una nota de
+     crédito anulada no cuenta. En la base, nota_credito; las vistas v_factura_saldo y v_resultado_proyecto la descuentan.
+   - Guía de despacho (ENT.guias, Logística): venta a un cliente, traslado entre bodegas, entrega en obra o devolución
+     a un proveedor. Al emitirla, cada línea que nombra un producto (código o nombre, lineaDe) crea su movimiento
+     (salida o traspaso, m.guia); anularla borra esos movimientos. Facturarla crea la factura de venta con sus líneas
+     (doc.guia) y queda «Facturada» (se calcula). En la base, guia_despacho y guia_despacho_linea.
+   - Desde una OC recibida: «Guía de entrega en obra» (si tiene proyecto) y «Guía de devolución al proveedor» (si la
+     recepción no fue conforme), ligadas a la OC (guia.oc; en la base guia_despacho.orden_compra_id).
+   Cada ficha muestra la cadena completa de documentos relacionados (trazabilidad.js). */
+const NC_MOTIVOS=['Anula la factura','Corrige el monto','Devolución de mercadería','Descuento'];
+const GUIA_TIPOS=['Venta','Traslado entre bodegas','Entrega en obra','Devolución a proveedor'];
+const ncsDe=d=>S.d.ncs.filter(n=>n.factura===d.id&&n.estado!=='Anulada');
+const facturaDeNC=n=>S.d.docs.find(d=>d.id===n.factura);
+// Total de una nota de crédito con el IVA de su factura (del exterior, sin IVA), como docTotal
+const ncTotal=n=>{const d=facturaDeNC(n);return docTotal({neto:n.neto,moneda:d?.moneda})};
+const ncNetoDe=d=>sum(ncsDe(d),n=>+n.neto||0);
+const ncTotalDe=d=>sum(ncsDe(d),ncTotal);
+// Neto de las notas de crédito en pesos, al cambio de la factura (resta en el resultado del proyecto)
+const ncCLP=d=>{const n=ncNetoDe(d);if(!n)return 0;return enPesos(d.moneda)?n:Math.round(n*(+d.tipoCambio||tasa(d.moneda,d.emision)||0))};
+const guiaFactura=g=>S.d.docs.find(d=>d.guia===g.id)||null;
+const movsDeGuia=g=>S.d.moves.filter(m=>m.guia===g.id);
+function guiaSt(g){
+  if(g.estado==='Anulada')return {label:'Anulada',tone:'todo'};if(g.estado!=='Emitida')return {label:'Borrador',tone:'todo'};
+  if(guiaFactura(g))return {label:'Facturada',tone:'done'};return {label:g.tipo==='Venta'?'Emitida · por facturar':'Emitida',tone:'prog'};
+}
+// Productos que nombra cada línea de la guía (el primero que calce), para los movimientos
+const productoDeLinea=l=>S.d.products.find(p=>lineaDe(p,l))||null;
+function emitirGuia(g){
+  if(g.tipo==='Traslado entre bodegas'&&(!g.destino||g.destino===g.bodega)){toast('Elige la bodega de destino del traslado');return false}
+  const ls=(g.lineas||[]).filter(l=>(l.d||'').trim()&&+l.q>0);if(!ls.length){toast('Agrega al menos una línea con su cantidad');return false}
+  if(movsDeGuia(g).length){toast('Esta guía ya movió el stock');return false}
+  g.estado='Emitida';g.fechaEmision=g.fechaEmision||TODAY;let n=0;
+  ls.forEach(l=>{const p=productoDeLinea(l);if(!p)return;n++;
+    S.d.moves.push({id:uid(),fecha:g.fecha||TODAY,tipo:g.tipo==='Traslado entre bodegas'?'Traspaso':'Salida',producto:p.id,cantidad:+l.q,bodega:g.bodega||'',
+      destino:g.tipo==='Traslado entre bodegas'?g.destino:'',proyecto:g.proyecto||'',responsable:S.me,documento:`Guía ${g.num||''}`.trim(),guia:g.id,nota:''})});
+  setTimeout(()=>toast(n?`Guía emitida: ${cuenta(n,'movimiento de stock','movimientos de stock')}`:'Guía emitida. Ninguna línea nombra un producto de la bodega, así que el stock no cambió.',4500),400);
+}
+function anularGuia(g){
+  if(guiaFactura(g)){toast('La guía ya tiene factura: emite una nota de crédito a la factura antes de anularla');return false}
+  S.d.moves=S.d.moves.filter(m=>m.guia!==g.id);g.estado='Anulada';
+}
+function facturarGuia(g){
+  if(guiaFactura(g)){toast('Esta guía ya tiene su factura');return false}
+  if(!canCreate('docs','contabilidad')){toast('Facturar la guía lo hace quien edita Contabilidad');return false}
+  const ls=(g.lineas||[]).filter(l=>(l.d||'').trim()).map(l=>({d:l.d,q:+l.q||0,p:+l.p||0}));
+  const d={id:uid(),tipo:'Venta',numero:'',contraparte:g.cliente||'',proyecto:g.proyecto||'',emision:TODAY,vence:addD(TODAY,30),moneda:'CLP',pagado:0,
+    lineas:ls,neto:Math.round(sum(ls,l=>l.q*l.p)),guia:g.id,notas:`Por la guía de despacho ${g.num||''}. La guía ya descontó el stock.`};
+  S.d.docs.push(d);imputar('docs',d);
+  setTimeout(()=>{editRec('docs',d.id,null,'contabilidad');toast('Factura creada: ponle su N° y revisa los precios')},50);
+}
+function ncDesdeFactura(d){
+  if(!canCreate('ncs','contabilidad')){toast('Tu rol no permite crear notas de crédito');return false}
+  const saldoNeto=Math.max(0,(+d.neto||0)-ncNetoDe(d));
+  editRec('ncs',null,{factura:d.id,motivo:'Anula la factura',neto:saldoNeto,fecha:TODAY},'contabilidad');return false;
+}
+// Guía desde la OC recibida: entregar en obra lo comprado o devolverlo al proveedor (queda ligada a la OC)
+function guiaDesdeOC(o,devolver){
+  if(!canCreate('guias','logistica')){toast('Las guías las crea quien edita Logística');return false}
+  editRec('guias',null,{tipo:devolver?'Devolución a proveedor':'Entrega en obra',oc:o.id,proyecto:devolver?'':o.proyecto||'',cliente:devolver?o.proveedor:'',
+    lineas:(o.lineas||[]).map(l=>({d:l.d,q:+l.q||0,p:+l.p||0})),neto:+o.neto||0,nota:`${devolver?'Devolución':'Entrega'} de lo comprado en la ${o.num||'OC'}.`},'logistica');return false;
+}
+// Registrar la factura del proveedor desde su OC (Compras ya la recibió o la envió)
+function facturaDesdeOC(o){
+  if(!canCreate('docs','contabilidad')){toast('Registrar la factura lo hace quien edita Contabilidad');return false}
+  editRec('docs',null,{tipo:'Compra',contraparte:o.proveedor,oc:o.id,proyecto:o.proyecto||'',centro:o.centro||'',moneda:o.moneda||'CLP',emision:TODAY,vence:addD(TODAY,30),
+    lineas:(o.lineas||[]).map(l=>({d:l.d,q:+l.q||0,p:+l.p||0})),neto:+o.neto||0,notas:`Por la ${o.num||'OC'}.`},'contabilidad');return false;
+}
+
+ENT.ncs={name:'Nota de crédito',mod:'contabilidad',fields:[
+  {k:'factura',label:'Factura que corrige',type:'ref',ref:'docs',req:1,list:1},
+  {k:'numero',label:'N° nota de crédito',req:1,list:1},
+  {k:'fecha',label:'Fecha',type:'date',list:1},
+  {k:'motivo',label:'Motivo',type:'select',options:NC_MOTIVOS,list:1},
+  {k:'neto',label:'Neto (en la moneda de la factura)',type:'money',cur:'moneda',list:1},
+  {k:'total',label:'Total con IVA',type:'money',cur:'moneda',calc:ncTotal,list:1},
+  {k:'estado',label:'Estado',type:'select',options:['Emitida','Anulada'],list:1},
+  {k:'notas',label:'Notas',type:'textarea'}],
+  defaults:()=>({fecha:TODAY,motivo:'Anula la factura',estado:'Emitida'}),
+  title:r=>`Nota de crédito ${r.numero||''}`.trim(),
+  status:r=>r.estado==='Anulada'?{label:'Anulada',tone:'todo'}:{label:facturaDeNC(r)?.tipo==='Compra'?'Recibida':'Emitida',tone:'done'},
+  sort:(a,b)=>(b.fecha||'').localeCompare(a.fecha||''),onSave:r=>{r.moneda=facturaDeNC(r)?.moneda||'CLP'},   // la moneda es la de su factura
+  validate:(o,r)=>{const d=S.d.docs.find(x=>x.id===o.factura);if(!d)return 'Elige la factura que corrige.';
+    if(!(+o.neto>0))return 'El neto debe ser mayor que cero.';
+    const otras=sum(S.d.ncs.filter(n=>n.factura===d.id&&n.estado!=='Anulada'&&n!==r&&n.id!==r.id),n=>+n.neto||0);
+    if(o.estado!=='Anulada'&&otras+(+o.neto)>(+d.neto||0)+.004)return `Las notas de crédito no pueden sumar más que el neto de la factura (${fmtMoney(+d.neto||0,d.moneda||'CLP')}).`;
+    if(S.d.ncs.some(n=>n!==r&&n.id!==r.id&&facturaDeNC(n)?.tipo===d.tipo&&(d.tipo==='Venta'||facturaDeNC(n)?.contraparte===d.contraparte)&&norm(n.numero)===norm(o.numero)))return 'Ya existe una nota de crédito con ese número.';
+    return ''},
+  extra:r=>{const d=facturaDeNC(r);if(!d)return '';
+    return `<div class="wide note"><span>${esc(ENT.docs.title(d))} · total ${fmtMoney(docTotal(d),d.moneda||'CLP')} · notas de crédito ${fmtMoney(ncTotalDe(d),d.moneda||'CLP')} · saldo ${fmtMoney(docSaldo(d),d.moneda||'CLP')}</span><button type="button" class="btn ghost sm" data-rec="docs:${d.id}:contabilidad">Abrir la factura</button></div>`},
+  actions:r=>r.id&&r.estado!=='Anulada'?[A('anu','Anular la nota de crédito',x=>{x.estado='Anulada'},1)]:[]};
+REF.ncs={list:()=>S.d.ncs,label:n=>ENT.ncs.title(n)};
+
+ENT.guias={name:'Guía de despacho',mod:'logistica',owner:'responsable',autonum:['num','GD-'],fields:[
+  {k:'num',label:'N° de guía',ro:1,list:1},
+  {k:'folio',label:'Folio SII (cuando se emita con el proveedor de facturación)'},
+  {k:'fecha',label:'Fecha',type:'date',list:1},
+  {k:'tipo',label:'Tipo de traslado',type:'select',options:GUIA_TIPOS,list:1},
+  {k:'bodega',label:'Sale de la bodega',type:'ref',ref:'bodegas',list:1},
+  {k:'destino',label:'Bodega de destino (traslado entre bodegas)',type:'ref',ref:'bodegas'},
+  {k:'cliente',label:'Cliente o proveedor que recibe',type:'ref',ref:'contacts',list:1},
+  {k:'proyecto',label:'Proyecto (entrega en obra o venta)',type:'ref',ref:'projects',list:1},
+  {k:'oc',label:'Orden de compra relacionada (lo comprado que se despacha o se devuelve)',type:'ref',ref:'ocs'},
+  {k:'direccion',label:'Dirección de destino'},
+  {k:'transporte',label:'Transportista y patente'},
+  {k:'responsable',label:'Responsable',type:'ref',ref:'people'},
+  LINES,
+  {k:'neto',label:'Neto (referencial)',type:'money',cur:'CLP'},
+  {k:'estado',label:'Estado',type:'select',options:['Borrador','Emitida','Anulada'],sinForm:1},
+  {k:'nota',label:'Nota',type:'textarea'}],
+  defaults:()=>({fecha:TODAY,tipo:'Entrega en obra',estado:'Borrador',responsable:S.me,bodega:(S.d.bodegas[0]||{}).id||'',lineas:[{d:'',q:1,p:0}]}),
+  lock:['estado'],ownEdit:r=>!r.id||r.estado==='Borrador',
+  title:r=>`Guía ${r.num||''}${r.cliente?` · ${refName('contacts',r.cliente)}`:r.proyecto?` · ${refName('projects',r.proyecto)}`:''}`,
+  status:guiaSt,sort:(a,b)=>(b.fecha||'').localeCompare(a.fecha||''),
+  validate:o=>{if(['Venta','Devolución a proveedor'].includes(o.tipo)&&!o.cliente)return `Elige ${o.tipo==='Venta'?'el cliente':'el proveedor'} que recibe.`;
+    if(o.tipo==='Entrega en obra'&&!o.proyecto)return 'Elige el proyecto donde se entrega.';
+    if(o.tipo==='Traslado entre bodegas'&&(!o.destino||o.destino===o.bodega))return 'Elige una bodega de destino distinta de la de salida.';return ''},
+  extra:g=>{if(!g.id)return '<p class="hint wide">Al emitir la guía, cada línea que nombra un producto (por su código o nombre) descuenta el stock de la bodega de salida.</p>';
+    const ms=movsDeGuia(g),f=guiaFactura(g);
+    return `<div class="wide note"><span>${ms.length?`Movió el stock: ${ms.map(m=>`${esc(refName('products',m.producto))} × ${m.cantidad}`).join(', ')}`:g.estado==='Emitida'?'Ninguna línea nombra un producto: no movió stock.':'Aún no mueve el stock: se descuenta al emitirla.'}${f?` · Facturada en ${esc(ENT.docs.title(f))}`:''}</span>${f?`<button type="button" class="btn ghost sm" data-rec="docs:${f.id}:contabilidad">Abrir la factura</button>`:''}</div>`},
+  actions:g=>({Borrador:g.id?[A('emi','Emitir la guía (descuenta el stock)',x=>emitirGuia(x))]:[],
+    Emitida:[...(g.tipo==='Venta'&&!guiaFactura(g)?[A('fac','Facturar la guía',x=>facturarGuia(x))]:[]),A('anu','Anular la guía',x=>anularGuia(x),1)]}[g.estado]||[])};
+REF.guias={list:()=>S.d.guias,label:g=>`Guía ${g.num||''}`};
+
+// La factura muestra sus notas de crédito y ofrece crearlas; la OC ofrece registrar su factura
+ENT.docs.fields.splice(ENT.docs.fields.findIndex(f=>f.k==='saldo'),0,{k:'nc',label:'Notas de crédito (total)',type:'money',cur:'moneda',calc:r=>ncTotalDe(r)||''});
+ENT.docs.fields.push({k:'guia',label:'Guía de despacho que factura',type:'ref',ref:'guias',ro:1});
+{const a0=ENT.docs.actions,x0=ENT.docs.extra;
+  ENT.docs.actions=r=>[...(a0?a0(r):[]),...(r.id&&+r.neto>ncNetoDe(r)?[A('nc','Crear nota de crédito',x=>ncDesdeFactura(x),1)]:[])];
+  ENT.docs.extra=r=>(x0?x0(r):'')+(r.id&&S.d.ncs.some(n=>n.factura===r.id)?`<div class="wide note"><span><b>Notas de crédito:</b> ${S.d.ncs.filter(n=>n.factura===r.id).map(n=>`<button type="button" class="lnkbtn" data-rec="ncs:${n.id}:contabilidad">${esc(n.numero||'s/n')} · ${esc(n.motivo||'')} · ${fmtMoney(ncTotal(n),r.moneda||'CLP')}${n.estado==='Anulada'?' (anulada)':''}</button>`).join(' · ')}</span></div>`:'')}
+ENT.moves.fields.push({k:'guia',label:'Guía de despacho',type:'ref',ref:'guias',ro:1});
+{const a0=ENT.ocs.actions;
+  ENT.ocs.actions=r=>[...(a0?a0(r):[]),...(r.id&&['Enviada','Recibida'].includes(r.estado)&&!S.d.docs.some(d=>d.oc===r.id)&&lvl('contabilidad')>=3?[A('regfac','Registrar la factura del proveedor',x=>facturaDesdeOC(x),1)]:[]),
+    ...(r.id&&r.estado==='Recibida'&&lvl('logistica')>=3?[...(r.proyecto?[A('gdobra','Guía de entrega en obra',x=>guiaDesdeOC(x,false),1)]:[]),
+      ...(['No conforme','Con observaciones'].includes(r.calidad)?[A('gddev','Guía de devolución al proveedor',x=>guiaDesdeOC(x,true),1)]:[])]:[])]}
+MOD.contabilidad.tabs.splice(MOD.contabilidad.tabs.findIndex(t=>t.id==='cru'),0,{id:'nc',label:'Notas de crédito',ent:'ncs',newLabel:'Nota de crédito'});
+MOD.logistica.tabs.splice(MOD.logistica.tabs.findIndex(t=>t.id==='mov')+1,0,{id:'gd',label:'Guías de despacho',ent:'guias',newLabel:'Guía de despacho'});
 
 /* ===== Lecciones aprendidas por proyecto (función 37) ===== */
 /* Vista "Lecciones" del proyecto (Proyectos "Ver"; los costos solo con Contabilidad "Ver").
@@ -6129,8 +6435,8 @@ INTEG.push({id:'lectura',fn:'41',web:1,nombre:'Lectura de fotos y PDF con IA',de
    No depende del navegador ni de la app: sirve igual en el servidor.
    ===================================================================== */
 var HILVANTA_ORDEN_TABLAS = ['empresa', 'empresa_area', 'rol', 'rol_permiso', 'persona', 'contacto', 'tipo_trabajo', 'plantilla_proyecto', 'centro_costo', 'proyecto', 'tarea',
-  'subtarea', 'comentario_tarea', 'indicador', 'bodega', 'producto', 'proyecto_material', 'oferta', 'bitacora', 'observacion_obra', 'formulario_terreno', 'incidente', 'denuncia', 'riesgo', 'orden_compra', 'orden_compra_linea', 'cotizacion', 'embarque', 'movimiento', 'activo', 'mantencion', 'reserva_activo', 'factura',
-  'factura_linea', 'pago', 'estado_pago', 'movimiento_bancario', 'solicitud_fondo', 'informe_gasto', 'rendicion', 'solicitud_ausencia', 'marca_asistencia', 'liquidacion', 'lista_personal', 'proceso_personal', 'proceso_item', 'curso', 'capacitacion', 'evaluacion_desempeno', 'requisito', 'documento_acreditacion',
+  'subtarea', 'comentario_tarea', 'indicador', 'bodega', 'producto', 'proyecto_material', 'oferta', 'bitacora', 'observacion_obra', 'formulario_terreno', 'incidente', 'denuncia', 'riesgo', 'orden_compra', 'orden_compra_linea', 'cotizacion', 'embarque', 'guia_despacho', 'guia_despacho_linea', 'movimiento', 'activo', 'mantencion', 'reserva_activo', 'factura',
+  'factura_linea', 'pago', 'nota_credito', 'estado_pago', 'movimiento_bancario', 'solicitud_fondo', 'informe_gasto', 'rendicion', 'solicitud_ausencia', 'marca_asistencia', 'liquidacion', 'lista_personal', 'proceso_personal', 'proceso_item', 'curso', 'capacitacion', 'evaluacion_desempeno', 'requisito', 'documento_acreditacion',
   'campo_personalizado', 'regla_aprobacion', 'automatizacion', 'automatizacion_ejecucion', 'aviso', 'tablero', 'tablero_fila', 'auditoria', 'adjunto', 'comentario', 'actividad', 'correlativo'];
 
 async function hilvantaAFilas(S, opciones) {
@@ -6162,6 +6468,16 @@ async function hilvantaAFilas(S, opciones) {
     return JSON.stringify((h || []).map(function (x) {
       var y = { por: idDe('people', x.por), en: x.at, accion: x.accion };
       if (x.nivel) y.nivel = x.nivel;
+      if (x.nota) y.nota = x.nota;
+      return y;
+    }));
+  };
+  // Revisión gasto a gasto de un informe (revision.js): [{vuelta, nivel, por, at, accion, nota, cambios}]
+  var revisiones = function (h) {
+    return JSON.stringify((h || []).map(function (x) {
+      var y = { vuelta: x.vuelta || 0, nivel: x.nivel || 1, por: idDe('people', x.por), en: x.at, accion: x.accion };
+      if (x.nota) y.nota = x.nota;
+      if (x.cambios) y.cambios = x.cambios;
       return y;
     }));
   };
@@ -6210,7 +6526,7 @@ async function hilvantaAFilas(S, opciones) {
       nombre: g('name'), rut: nulo(g('rut')), cargo: nulo(g('role')), area_trabajo: nulo(g('area')),
       fecha_ingreso: fecha(g('ingreso')), tipo_contrato: nulo(g('contrato')), estado: g('estado') || 'Activo',
       telefono: nulo(g('telefono')), email: nulo(g('email')), capacidad_horas: num(g('capacidad')), resumen_canal: g('resumen') || 'No',
-      gastos_rol: nulo(g('gastosRol')), flujo_gasto: nulo(g('flujoGasto')), flujos_gasto: JSON.stringify(g('flujosGasto') || []), permisos: JSON.stringify(g('permisos') || {}),
+      gastos_rol: nulo(g('gastosRol')), flujo_gasto: nulo(g('flujoGasto')), flujos_gasto: JSON.stringify(g('flujosGasto') || []), permisos: JSON.stringify(g('permisos') || {}), inicio_todos: !!g('inicioTodos'),
       panel: (g('panel'), null), pin_hash: null, extra: g.extra()
     });
     g.fin();
@@ -6468,13 +6784,25 @@ async function hilvantaAFilas(S, opciones) {
     g.fin();
   });
 
+  // Guías de despacho (tributarios.js, 26-10-2026): antes que los movimientos y las facturas que apuntan a ellas
+  (d.guias || []).forEach(function (x) {
+    var g = leer(x, 'guias', 'guias'), id = nuevoId('guias', x.id), donde = 'guía de despacho ' + x.num;
+    filas.guia_despacho.push({
+      id: id, empresa_id: E, numero: g('num') || '', folio: nulo(g('folio')), fecha: fecha(g('fecha')), tipo: g('tipo') || 'Entrega en obra',
+      bodega_id: ref('bodegas', g('bodega'), donde), destino_id: ref('bodegas', g('destino'), donde), contraparte_id: ref('contacts', g('cliente'), donde),
+      proyecto_id: ref('projects', g('proyecto'), donde), direccion: nulo(g('direccion')), transporte: nulo(g('transporte')), responsable_id: ref('people', g('responsable'), donde),
+      orden_compra_id: ref('ocs', g('oc'), donde), neto: num(g('neto')) || 0, estado: g('estado') || 'Borrador', fecha_emision: fecha(g('fechaEmision')), nota: nulo(g('nota')), extra: g.extra()
+    });
+    lineas('guia_despacho_linea', 'guia_id', id, g('lineas'), 'guias.lineas');
+    g.fin();
+  });
   (d.moves || []).forEach(function (m) {
     var g = leer(m, 'moves', 'moves');
     filas.movimiento.push({
       id: nuevoId('moves', m.id), empresa_id: E, fecha: fecha(g('fecha')), tipo: g('tipo'), producto_id: ref('products', g('producto'), 'movimiento'),
       cantidad: num(g('cantidad')) || 0, bodega_id: ref('bodegas', g('bodega'), 'movimiento'), destino_id: ref('bodegas', g('destino'), 'movimiento'),
       proveedor_id: ref('contacts', g('proveedor'), 'movimiento'), proyecto_id: ref('projects', g('proyecto'), 'movimiento'),
-      responsable_id: ref('people', g('responsable'), 'movimiento'), documento: nulo(g('documento')), nota: nulo(g('nota')), extra: g.extra()
+      responsable_id: ref('people', g('responsable'), 'movimiento'), documento: nulo(g('documento')), nota: nulo(g('nota')), guia_id: ref('guias', g('guia'), 'movimiento'), extra: g.extra()
     });
     g.fin();
   });
@@ -6520,11 +6848,21 @@ async function hilvantaAFilas(S, opciones) {
       id: id, empresa_id: E, tipo: g('tipo') || 'Venta', numero: g('numero') || '', contraparte_id: ref('contacts', g('contraparte'), 'factura ' + f.numero),
       proyecto_id: ref('projects', g('proyecto'), 'factura ' + f.numero), centro_id: ref('centros', g('centro'), 'factura ' + f.numero), orden_compra_id: ref('ocs', g('oc'), 'factura ' + f.numero), emision: fecha(g('emision')), vence: fecha(g('vence')),
       moneda: moneda, tipo_cambio: num(g('tipoCambio')) > 0 ? num(g('tipoCambio')) : null,
-      neto: neto, iva: total - neto, total: total, notas: nulo(g('notas')), extra: g.extra()
+      neto: neto, iva: total - neto, total: total, notas: nulo(g('notas')), guia_id: ref('guias', g('guia'), 'factura ' + f.numero), extra: g.extra()
     });
     lineas('factura_linea', 'factura_id', id, g('lineas'), 'docs.lineas');
     var pagado = num(g('pagado')) || 0, pagadoCLP = num(g('pagadoCLP')) || 0;
     if (pagado > 0) filas.pago.push({ empresa_id: E, factura_id: id, fecha: fecha(f.emision), monto: pagado, monto_clp: moneda !== 'CLP' && pagadoCLP > 0 ? pagadoCLP : null, nota: 'Importado del prototipo (sin fecha real de pago)' });
+    g.fin();
+  });
+  // Notas de crédito (tributarios.js): en la moneda de su factura, con su IVA (del exterior, sin IVA), como ncTotal
+  (d.ncs || []).forEach(function (n) {
+    var g = leer(n, 'ncs', 'ncs'), donde = 'nota de crédito ' + n.numero;
+    var moneda = g('moneda') || 'CLP', neto = num(g('neto')) || 0, total = moneda === 'CLP' ? Math.round(neto * 1.19) : Math.round(neto * 100) / 100;
+    filas.nota_credito.push({
+      id: nuevoId('ncs', n.id), empresa_id: E, factura_id: ref('docs', g('factura'), donde), numero: g('numero') || '', fecha: fecha(g('fecha')),
+      motivo: g('motivo') || 'Anula la factura', moneda: moneda, neto: neto, iva: total - neto, total: total, estado: g('estado') || 'Emitida', notas: nulo(g('notas')), extra: g.extra()
+    });
     g.fin();
   });
   if (filas.pago.length) avisos.push(filas.pago.length + ' factura(s) con monto pagado: se crea un pago con la fecha de emisión, porque el prototipo no guarda la fecha real.');
@@ -6576,7 +6914,8 @@ async function hilvantaAFilas(S, opciones) {
       motivo: g('motivo') || '', comercio: nulo(g('comercio')), rut_comercio: nulo(g('rutComercio')), moneda: g('moneda') || 'CLP',
       monto: num(g('monto')) || 0, monto_clp: num(g('montoCLP')) > 0 ? num(g('montoCLP')) : null, categoria: g('categoria') || 'Otros',
       tipo_documento: nulo(g('tipoDoc')), numero_documento: nulo(g('numDoc')),
-      estado: g('estado') || 'Pendiente', detalle: nulo(g('nota')), flujo_gasto: nulo(g('flujo')), aprobaciones: historial(g('aprobaciones')), extra: g.extra()
+      estado: g('estado') || 'Pendiente', detalle: nulo(g('nota')), flujo_gasto: nulo(g('flujo')), aprobaciones: historial(g('aprobaciones')),
+      revisiones: revisiones(g('revisiones')), extra: g.extra()
     });
     g('foto');   // calculado
     g.fin();
@@ -6777,6 +7116,7 @@ async function hilvantaAFilas(S, opciones) {
   (S.people || []).forEach(function (p, i) { if (p.panel) filas.persona[i].panel = panelIds(p.panel); });
   (S.roles || []).forEach(function (r, i) { if (r.panel) filas.rol[i].panel = panelIds(r.panel); });
   filas.empresa[0].funciones = JSON.stringify(S.funciones || []);
+  filas.empresa[0].inicio = S.inicioEmpresa ? panelIds(S.inicioEmpresa) : null;
   filas.empresa[0].karin = JSON.stringify(Object.assign({}, S.karin || {}, { investigadores: ((S.karin || {}).investigadores || []).map(function (id) { return idDe('people', id); }).filter(Boolean) }));
   filas.empresa[0].vistas = JSON.stringify((S.vistasEmpresa || []).map(function (v) { var x = JSON.parse(JSON.stringify(v)); (x.filtros || []).forEach(filtroIds); return x; }));
 
@@ -6784,7 +7124,7 @@ async function hilvantaAFilas(S, opciones) {
      las entradas nuevas las escriben los disparadores de la base con los nombres de columna. */
   var TABLA = { projects: 'proyecto', tasks: 'tarea', people: 'persona', roles: 'rol', contacts: 'contacto', ocs: 'orden_compra',
     ships: 'embarque', products: 'producto', moves: 'movimiento', docs: 'factura', rends: 'rendicion', fondos: 'solicitud_fondo', informes: 'informe_gasto', leaves: 'solicitud_ausencia',
-    reqs: 'requisito', accdocs: 'documento_acreditacion', bodegas: 'bodega', activos: 'activo', mants: 'mantencion', cotizaciones: 'cotizacion', bitacora: 'bitacora', formularios: 'formulario_terreno', incidentes: 'incidente', riesgos: 'riesgo', reservas: 'reserva_activo', ofertas: 'oferta', marcas: 'marca_asistencia', edps: 'estado_pago', centros: 'centro_costo', liquidaciones: 'liquidacion', capacitaciones: 'capacitacion', evaluaciones: 'evaluacion_desempeno', tableros: 'tablero', filas: 'tablero_fila', observaciones: 'observacion_obra', denuncias: 'denuncia', ajustes: 'empresa' };
+    reqs: 'requisito', accdocs: 'documento_acreditacion', bodegas: 'bodega', activos: 'activo', mants: 'mantencion', cotizaciones: 'cotizacion', bitacora: 'bitacora', formularios: 'formulario_terreno', incidentes: 'incidente', riesgos: 'riesgo', reservas: 'reserva_activo', ofertas: 'oferta', marcas: 'marca_asistencia', edps: 'estado_pago', centros: 'centro_costo', liquidaciones: 'liquidacion', capacitaciones: 'capacitacion', evaluaciones: 'evaluacion_desempeno', tableros: 'tablero', filas: 'tablero_fila', observaciones: 'observacion_obra', denuncias: 'denuncia', guias: 'guia_despacho', ncs: 'nota_credito', ajustes: 'empresa' };
   (S.audit || []).slice().reverse().forEach(function (x) {
     var g = leer(x, 'audit');
     filas.auditoria.push({
@@ -6832,9 +7172,9 @@ async function hilvantaAFilas(S, opciones) {
   });
 
   /* ---------- Claves de primer nivel ---------- */
-  var conocidas = { v: 1, me: 1, isSample: 1, ui: 1, company: 1, mods: 1, roles: 1, people: 1, projects: 1, tasks: 1, d: 1, custom: 1, auto: 1, aprob: 1, log: 1, audit: 1, caja: 1, checklists: 1, integ: 1, feriados: 1, flujos: 1, gastoCats: 1, funciones: 1, jornada: 1, marca: 1, correlativos: 1, textosDoc: 1, estados: 1, karin: 1, vistasEmpresa: 1 };
+  var conocidas = { v: 1, me: 1, isSample: 1, ui: 1, company: 1, mods: 1, roles: 1, people: 1, projects: 1, tasks: 1, d: 1, custom: 1, auto: 1, aprob: 1, log: 1, audit: 1, caja: 1, checklists: 1, integ: 1, feriados: 1, flujos: 1, gastoCats: 1, funciones: 1, jornada: 1, marca: 1, correlativos: 1, textosDoc: 1, estados: 1, karin: 1, vistasEmpresa: 1, inicioEmpresa: 1 };
   Object.keys(S).forEach(function (k) { if (!conocidas[k]) sinDestino['S.' + k] = 1; });
-  Object.keys(d).forEach(function (k) { if (['contacts', 'ocs', 'ships', 'products', 'moves', 'docs', 'rends', 'fondos', 'informes', 'leaves', 'reqs', 'accdocs', 'avisos', 'autoruns', 'adjuntos', 'bodegas', 'activos', 'mants', 'plantillas', 'cotizaciones', 'bitacora', 'formularios', 'marcas', 'ofertas', 'incidentes', 'riesgos', 'reservas', 'edps', 'cartola', 'centros', 'indicadores', 'liquidaciones', 'procesos', 'trabajos', 'cursos', 'capacitaciones', 'evaluaciones', 'tableros', 'filas', 'comentarios', 'observaciones', 'denuncias'].indexOf(k) < 0) sinDestino['S.d.' + k] = 1; });
+  Object.keys(d).forEach(function (k) { if (['contacts', 'ocs', 'ships', 'products', 'moves', 'docs', 'rends', 'fondos', 'informes', 'leaves', 'reqs', 'accdocs', 'avisos', 'autoruns', 'adjuntos', 'bodegas', 'activos', 'mants', 'plantillas', 'cotizaciones', 'bitacora', 'formularios', 'marcas', 'ofertas', 'incidentes', 'riesgos', 'reservas', 'edps', 'cartola', 'centros', 'indicadores', 'liquidaciones', 'procesos', 'trabajos', 'cursos', 'capacitaciones', 'evaluaciones', 'tableros', 'filas', 'comentarios', 'observaciones', 'denuncias', 'guias', 'ncs'].indexOf(k) < 0) sinDestino['S.d.' + k] = 1; });
 
   return { filas: filas, ids: ids, avisos: avisos, sinDestino: Object.keys(sinDestino) };
 }
@@ -6876,7 +7216,7 @@ var HILVANTA_COL_TABLA = { projects: 'proyecto', tasks: 'tarea', people: 'person
   reqs: 'requisito', accdocs: 'documento_acreditacion', bodegas: 'bodega', activos: 'activo', mants: 'mantencion', cotizaciones: 'cotizacion',
   bitacora: 'bitacora', formularios: 'formulario_terreno', incidentes: 'incidente', riesgos: 'riesgo', reservas: 'reserva_activo', ofertas: 'oferta',
   marcas: 'marca_asistencia', edps: 'estado_pago', centros: 'centro_costo', liquidaciones: 'liquidacion', capacitaciones: 'capacitacion',
-  evaluaciones: 'evaluacion_desempeno', tableros: 'tablero', filas: 'tablero_fila', observaciones: 'observacion_obra', denuncias: 'denuncia', comentarios: 'comentario', cursos: 'curso', trabajos: 'tipo_trabajo', plantillas: 'plantilla_proyecto', cartola: 'movimiento_bancario',
+  evaluaciones: 'evaluacion_desempeno', tableros: 'tablero', filas: 'tablero_fila', observaciones: 'observacion_obra', denuncias: 'denuncia', guias: 'guia_despacho', ncs: 'nota_credito', comentarios: 'comentario', cursos: 'curso', trabajos: 'tipo_trabajo', plantillas: 'plantilla_proyecto', cartola: 'movimiento_bancario',
   procesos: 'proceso_personal', avisos: 'aviso', autoruns: 'automatizacion_ejecucion', adjuntos: 'adjunto', indicadores: 'indicador', auto: 'automatizacion', ajustes: 'empresa' };
 
 function hilvantaDesdeFilas(t, E) {
@@ -6888,9 +7228,10 @@ function hilvantaDesdeFilas(t, E) {
   var json = function (v, def) { if (v == null) return def; if (typeof v === 'string') { try { return JSON.parse(v); } catch (e) { return def; } } return v; };
   var con = function (o, extra) { var x = json(extra, {}); Object.keys(x || {}).forEach(function (k) { o[k] = x[k]; }); return o; };
   // Permisos propios y panel: solo si la persona los tiene (así los datos de siempre quedan igual)
-  var sinVacios = function (o) { if (!o.panel) delete o.panel; if (!o.permisos || !Object.keys(o.permisos).length) delete o.permisos; return o; };
+  var sinVacios = function (o) { if (!o.panel) delete o.panel; if (!o.inicioTodos) delete o.inicioTodos; if (!o.permisos || !Object.keys(o.permisos).length) delete o.permisos; return o; };
   var lineas = function (tabla, col, id) { return hijos(tabla, col, id).map(function (l) { return { d: s(l.descripcion), q: +l.cantidad || 0, p: +l.precio_unitario || 0 }; }); };
-  var hist = function (h) { return json(h, []).map(function (x) { var y = { por: x.por || '', at: x.en, accion: x.accion }; if (x.nivel) y.nivel = x.nivel; return y; }); };
+  var hist = function (h) { return json(h, []).map(function (x) { var y = { por: x.por || '', at: x.en, accion: x.accion }; if (x.nivel) y.nivel = x.nivel; if (x.nota) y.nota = x.nota; return y; }); };
+  var revs = function (h) { return json(h, []).map(function (x) { var y = { vuelta: +x.vuelta || 0, nivel: +x.nivel || 1, por: x.por || '', at: x.en, accion: x.accion }; if (x.nota) y.nota = x.nota; if (x.cambios) y.cambios = x.cambios; return y; }); };
   var COL = {}; Object.keys(HILVANTA_COL_TABLA).forEach(function (c) { COL[HILVANTA_COL_TABLA[c]] = c; });
   var contactos = {}; de('contacto').forEach(function (c) { contactos[c.id] = c; });
 
@@ -6900,13 +7241,14 @@ function hilvantaDesdeFilas(t, E) {
     flujos: json(em.flujos_gasto, []), gastoCats: json(em.gasto_categorias, []), funciones: json(em.funciones, []),
     jornada: json(em.jornada, {}), marca: json(em.marca, {}), correlativos: json(em.correlativos, {}), textosDoc: json(em.textos_doc, {}), estados: json(em.estados, {}),
     karin: json(em.karin, { investigadores: [] }), vistasEmpresa: json(em.vistas, []), d: {} };
+  if (json(em.inicio, null)) S.inicioEmpresa = json(em.inicio, null);
   S.mods = {}; de('empresa_area').forEach(function (a) { S.mods[a.area] = !!a.activa; });
 
   S.roles = de('rol').map(function (r) { var p = {}; hijos('rol_permiso', 'rol_id', r.id).forEach(function (x) { p[x.area] = x.nivel; }); var o = { id: r.id, name: s(r.nombre), admin: !!r.es_admin, perms: p }; var pn = json(r.panel, null); if (pn) o.panel = pn; return o; });
   S.people = de('persona').map(function (p) {
     return sinVacios(con({ id: p.id, name: s(p.nombre), rut: s(p.rut), role: s(p.cargo), area: s(p.area_trabajo), ingreso: f(p.fecha_ingreso), contrato: s(p.tipo_contrato),
       estado: s(p.estado) || 'Activo', telefono: s(p.telefono), email: s(p.email), capacidad: n(p.capacidad_horas), resumen: s(p.resumen_canal) || 'No', roleId: p.rol_id || '', gastosRol: s(p.gastos_rol), flujoGasto: s(p.flujo_gasto), flujosGasto: json(p.flujos_gasto, []),
-      permisos: json(p.permisos, {}), panel: json(p.panel, null) }, p.extra));
+      permisos: json(p.permisos, {}), panel: json(p.panel, null), inicioTodos: !!p.inicio_todos }, p.extra));
   });
   var d = S.d;
   d.centros = de('centro_costo').map(function (c) { return con({ id: c.id, codigo: s(c.codigo), nombre: s(c.nombre), area: s(c.area), responsable: c.responsable_id || '', activo: c.activo === false ? 'No' : 'Sí', notas: s(c.notas) }, c.extra); });
@@ -6999,7 +7341,15 @@ function hilvantaDesdeFilas(t, E) {
   });
   d.moves = de('movimiento').map(function (m) {
     return con({ id: m.id, fecha: f(m.fecha), tipo: m.tipo, producto: m.producto_id || '', cantidad: +m.cantidad || 0, bodega: m.bodega_id || '', destino: m.destino_id || '',
-      proveedor: m.proveedor_id || '', proyecto: m.proyecto_id || '', responsable: m.responsable_id || '', documento: s(m.documento), nota: s(m.nota) }, m.extra);
+      proveedor: m.proveedor_id || '', proyecto: m.proyecto_id || '', responsable: m.responsable_id || '', documento: s(m.documento), nota: s(m.nota), guia: m.guia_id || '' }, m.extra);
+  });
+  d.guias = de('guia_despacho').map(function (x) {
+    return con({ id: x.id, num: s(x.numero), folio: s(x.folio), fecha: f(x.fecha), tipo: s(x.tipo) || 'Entrega en obra', bodega: x.bodega_id || '', destino: x.destino_id || '',
+      cliente: x.contraparte_id || '', proyecto: x.proyecto_id || '', direccion: s(x.direccion), transporte: s(x.transporte), responsable: x.responsable_id || '', oc: x.orden_compra_id || '',
+      neto: +x.neto || 0, estado: s(x.estado) || 'Borrador', fechaEmision: f(x.fecha_emision), nota: s(x.nota), lineas: lineas('guia_despacho_linea', 'guia_id', x.id) }, x.extra);
+  });
+  d.ncs = de('nota_credito').map(function (x) {
+    return con({ id: x.id, factura: x.factura_id || '', numero: s(x.numero), fecha: f(x.fecha), motivo: s(x.motivo), neto: +x.neto || 0, moneda: s(x.moneda) || 'CLP', estado: s(x.estado) || 'Emitida', notas: s(x.notas) }, x.extra);
   });
   d.activos = de('activo').map(function (a) {
     return con({ id: a.id, codigo: s(a.codigo), nombre: s(a.nombre), tipo: s(a.tipo) || 'Herramienta', marca: s(a.marca), serie: s(a.serie), responsable: a.responsable_id || '',
@@ -7026,7 +7376,7 @@ function hilvantaDesdeFilas(t, E) {
     var pagos = hijos('pago', 'factura_id', x.id);
     var pagado = pagos.reduce(function (a, p) { return a + (+p.monto || 0); }, 0), pagadoCLP = pagos.reduce(function (a, p) { return a + (+p.monto_clp || 0); }, 0);
     var r = { id: x.id, tipo: s(x.tipo) || 'Venta', numero: s(x.numero), contraparte: x.contraparte_id || '', proyecto: x.proyecto_id || '', centro: x.centro_id || '', oc: x.orden_compra_id || '',
-      emision: f(x.emision), vence: f(x.vence), moneda: s(x.moneda) || 'CLP', neto: +x.neto || 0, pagado: pagado, notas: s(x.notas), lineas: lineas('factura_linea', 'factura_id', x.id) };
+      emision: f(x.emision), vence: f(x.vence), moneda: s(x.moneda) || 'CLP', neto: +x.neto || 0, pagado: pagado, notas: s(x.notas), guia: x.guia_id || '', lineas: lineas('factura_linea', 'factura_id', x.id) };
     if (+x.tipo_cambio > 0) r.tipoCambio = +x.tipo_cambio;
     if (pagadoCLP > 0) r.pagadoCLP = pagadoCLP;
     return con(r, x.extra);
@@ -7049,6 +7399,7 @@ function hilvantaDesdeFilas(t, E) {
       comercio: s(r.comercio), rutComercio: s(r.rut_comercio), moneda: s(r.moneda) || 'CLP', monto: +r.monto || 0, categoria: s(r.categoria) || 'Otros',
       tipoDoc: s(r.tipo_documento), numDoc: s(r.numero_documento), estado: s(r.estado) || 'Pendiente', nota: s(r.detalle), flujo: s(r.flujo_gasto), aprobaciones: hist(r.aprobaciones) };
     if (+r.monto_clp > 0) o.montoCLP = +r.monto_clp;
+    if (json(r.revisiones, []).length) o.revisiones = revs(r.revisiones);
     return con(o, r.extra);
   });
   d.leaves = de('solicitud_ausencia').map(function (l) {
@@ -7124,7 +7475,7 @@ function hilvantaDesdeFilas(t, E) {
      se avisa y se vuelve a cargar todo desde el servidor, para no quedar con datos que no son los reales.
    - El cliente es una interfaz chica (leer, insertar, actualizar, borrar, rpc): clienteSupabase en la app y uno
      sobre PostgreSQL en las pruebas (pruebas/servidor.js). */
-const SRV_HIJOS={orden_compra:[['orden_compra_linea','orden_compra_id']],factura:[['factura_linea','factura_id'],['pago','factura_id']],
+const SRV_HIJOS={orden_compra:[['orden_compra_linea','orden_compra_id']],guia_despacho:[['guia_despacho_linea','guia_id']],factura:[['factura_linea','factura_id'],['pago','factura_id']],
   tarea:[['subtarea','tarea_id']],proyecto:[['proyecto_material','proyecto_id']],rol:[['rol_permiso','rol_id']]};
 const SRV_NO_TOCA={persona:['usuario_id','pin_hash'],contacto:[],tarea:['creado_en']};   // columnas que la app no maneja
 let SRV=null;   // {cli, E, me, foto, cola, ocupado, error}
@@ -7164,6 +7515,7 @@ async function srvSincronizar(cli,E,me,foto,s,cambios){
       if(c.op!=='borrar'){const f=F.indicador.find(r=>r.fecha===c.reg.fecha);if(f)await cli.insertar('indicador',[f])}continue}
     if(c.op==='borrar'){await unaFila(cli.borrar(tabla,{id:c.id}));continue}
     const f=filaDe(tabla,c.id);if(!f)continue;
+    if(tabla==='rol'&&c.op!=='crear'&&!isAdmin()){await unaFila(cli.actualizar('rol',{panel:f.panel},{id:c.id}));continue}   // Inicio del rol (persona.inicio_todos)
     if(tabla==='proyecto'&&f.cliente_id&&!(s.d.contacts||[]).some(x=>x.id===f.cliente_id)){   // cliente nuevo escrito a mano
       const ct=filaDe('contacto',f.cliente_id);if(ct){await cli.insertar('contacto',[ct]);s.d.contacts.push({id:ct.id,nombre:ct.nombre,tipo:'Cliente',pais:'Chile'})}}
     // Otra persona (que esta no ve) pudo anotar ya la misma ejecución de una automatización: no es un error
@@ -7184,6 +7536,7 @@ async function srvSincronizar(cli,E,me,foto,s,cambios){
 }
 async function srvAjuste(cli,E,F,clave){
   const em=F.empresa[0];
+  if(clave==='inicioEmpresa')return cli.actualizar('empresa',{inicio:em.inicio?JSON.parse(em.inicio):null},{id:E});   // 'inicio' también es una fecha en otras tablas: aquí va como jsonb
   if(['company','caja','integ','feriados','flujos','gastoCats','funciones','jornada','marca','correlativos','textosDoc','estados','karin','vistasEmpresa'].includes(clave))return cli.actualizar('empresa',{nombre:em.nombre,saldo_banco:em.saldo_banco,fecha_saldo_banco:em.fecha_saldo_banco,integraciones:em.integraciones,feriados:em.feriados,flujos_gasto:em.flujos_gasto,gasto_categorias:em.gasto_categorias,funciones:em.funciones,
     jornada:em.jornada,marca:em.marca,correlativos:em.correlativos,textos_doc:em.textos_doc,estados:em.estados,karin:em.karin,vistas:em.vistas},{id:E});
   if(clave==='mods'){for(const a of F.empresa_area){await cli.borrar('empresa_area',{empresa_id:E,area:a.area});await cli.insertar('empresa_area',[a])}return}
@@ -7215,7 +7568,7 @@ async function conectarServidor(cli){
 }
 /* ---------- Cliente sobre supabase-js ---------- */
 // Columnas jsonb: el importador las entrega como texto JSON (sirve para SQL); a la API van como objeto
-const SRV_JSONB=new Set(['accion','acceso','aprobaciones','cambios','columnas','datos','disparador','extra','fases','feriados','flujos_gasto','funciones','gasto_categorias','grupos','panel','permisos','firma','firmas','hitos','integraciones','items','materiales','niveles','ofertas','participantes','portal','preferencias','respuestas','ubicacion','condicion','jornada','marca','correlativos','textos_doc','estados','karin','vistas','cierre']);
+const SRV_JSONB=new Set(['accion','acceso','aprobaciones','cambios','columnas','datos','disparador','extra','fases','feriados','flujos_gasto','funciones','gasto_categorias','grupos','panel','permisos','firma','firmas','hitos','integraciones','items','materiales','niveles','ofertas','participantes','portal','preferencias','respuestas','ubicacion','condicion','jornada','revisiones','marca','correlativos','textos_doc','estados','karin','vistas','cierre']);
 // Columnas de texto que se llaman igual que una jsonb de otra tabla (se revisan con esquema.sql al sumar un nombre a la lista)
 const SRV_TEXTO={incidente:['accion'],auditoria:['accion'],activo:['marca'],observacion_obra:['ubicacion']};
 const srvJSON=t=>f=>{const o={},txt=SRV_TEXTO[t]||[];Object.keys(f).forEach(k=>{const v=f[k];if(v===undefined)return;o[k]=SRV_JSONB.has(k)&&!txt.includes(k)&&typeof v==='string'?JSON.parse(v):v});return o};
@@ -7630,6 +7983,8 @@ function renderTop(){
       <div class="umhead">${av(S.me)}<span><b>${esc(p?.name||'Sin usuario')}</b><span class="hint">${esc(myRole().name)}${p?.email?` · ${esc(p.email)}`:''}</span></span></div>
       <button type="button" role="menuitem" class="umitem" data-go="portal">${I(ICON.portal)}<span>Mi portal</span></button>
       <button type="button" role="menuitem" class="umitem" data-go="ajustes">${I(ICON.gear)}<span>${isAdmin()?'Usuarios y ajustes':'Ajustes y mi cuenta'}</span></button>
+      <button type="button" role="menuitem" class="umitem" data-ppers>${I(ICON.home)}<span>${S.ui.personalizar?'Terminar de personalizar':'Personalizar Inicio'}</span></button>
+      ${isAdmin()?`<button type="button" role="menuitem" class="umitem" data-veract>${I(ICON.chart)}<span>Actividad reciente</span></button>`:''}
       <div class="umtema"><span class="hint">Tema</span><div class="seg" role="group" aria-label="Tema">${tema.map(([id,n])=>`<button type="button" data-theme-set="${id}" aria-pressed="${PREFS.theme===id}">${n}</button>`).join('')}</div></div>
       ${SRV?'<button type="button" role="menuitem" class="umitem salir" data-act="salir"><span>Cerrar sesión</span></button>':'<button type="button" role="menuitem" class="umitem" data-act="login"><span>Cambiar de usuario</span></button>'}
     </div>`;
@@ -7721,8 +8076,6 @@ function viewPanel(){
   if(lvl('proyectos')>=2){const projRows=S.projects.filter(p=>p.status==='activo').map(p=>{const ts=S.tasks.filter(t=>t.projectId===p.id);const d=ts.filter(t=>t.status==='done').length;const pc=ts.length?Math.round(d/ts.length*100):0;const l=ts.filter(isLate).length;
     return `<button class="prow" data-proj="${p.id}"><span class="pn"><span class="pdot" style="background:${pcol(p)}"></span>${esc(p.name)}</span><span class="bar"><span style="width:${pc}%;background:var(--s-${l?'stuck':p.end&&diff(TODAY,p.end)<=14&&pc<80?'prog':'done'})"></span></span><span class="num">${pc}%</span><span class="pl ${l?'late':''}">${l?`${l} atrasada${l>1?'s':''}`:'Al día'}</span></button>`});
     P.avance=(`<section class="box"><h2>Avance por proyecto</h2>${plegar(projRows,3)||empty('No hay proyectos activos.')}</section>`)}
-  if(isAdmin()){const li=S.log.slice(0,9).map(a=>`<li><span class="when">${ago(a.at)}</span><span>${esc(a.text)}</span></li>`);
-    P.actividad=(`<section class="box"><h2>Actividad reciente</h2><ul class="act">${li.slice(0,3).join('')||'<li class="empty">Sin actividad todavía.</li>'}</ul>${li.length>3?`<details class="mas"><summary>Mostrar ${li.length-3} más</summary><ul class="act">${li.slice(3).join('')}</ul></details>`:''}</section>`)}
   return `${heroInicio(pend,al,myOpen)}<div class="inicio-cuerpo">${panelOculto('kpis')&&!S.ui.personalizar?'':`<div class="kpis unidas">${tiles.join('')}</div>`}
   ${S.isSample&&!S.ui.hideNote?`<div class="note"><span>Estás viendo <b>datos de ejemplo</b>. Prueba cambiar de usuario arriba a la derecha para ver la app como la ve cada rol.</span><button class="btn ghost sm" data-act="hideNote">Entendido</button></div>`:''}
   ${armarInicio(Object.assign({tudia:tuDia(myOpen),atajos:atajos()},P))}</div>`;
@@ -8405,8 +8758,10 @@ function editPermisosPersona(pid){
     // Fuera de las áreas activas se conservan (se reactivan con su excepción)
     Object.keys(p.permisos||{}).filter(a=>!areas.includes(a)).forEach(a=>nuevo[a]=p.permisos[a]);
     if(Object.keys(nuevo).length)p.permisos=nuevo;else delete p.permisos;
+    if(o.inicioTodos==='1')p.inicioTodos=true;else delete p.inicioTodos;
     addLog(`${meName()} ajustó los permisos de ${p.name}`);
-  },null,'',[],`<p class="hint wide">${esc(p.name)} tiene el rol <b>${esc(r.name)}</b>. Elige un nivel solo en las áreas donde deba ser distinto; el resto sigue a su rol, también si después cambias el rol.</p>`+flds.map(f=>field(f,vals[f.k])).join(''));
+  },null,'',[],`<p class="hint wide">${esc(p.name)} tiene el rol <b>${esc(r.name)}</b>. Elige un nivel solo en las áreas donde deba ser distinto; el resto sigue a su rol, también si después cambias el rol.</p>`+flds.map(f=>field(f,vals[f.k])).join('')
+    +field({k:'inicioTodos',label:'Personalizar el Inicio para un rol o para toda la empresa',type:'select',options:[{id:'',name:'No: solo su propio Inicio'},{id:'1',name:'Sí'}]},p.inicioTodos?'1':''));
 }
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-permpers]');if(b){e.preventDefault();editPermisosPersona(b.dataset.permpers)}});
 /* Roles: etiquetas por nivel en la lista y el formulario con el detalle por área */
@@ -9376,16 +9731,36 @@ document.addEventListener('dragend',()=>{tbArrastre=null});
      desde el 24-10-2026 también meta con avance, indicador con semáforo, línea de 6 meses y próximos vencimientos.
    Cada panel puede llevar un filtro (filtros.js). Se guarda en la ficha de la persona: p.panel = {izq:[ids], der:[ids],
    ocultos:[ids], widgets:[{id,tipo,titulo,fuente:'t:<tablero>'|'e:<entidad>',op,col,agrupar,filtros:[{k,op,v}],n}],
-   menu:[tableros fijados en su menú]}. En la base, persona.panel (lo cambia cada uno). */
+   menu:[tableros fijados en su menú]}. En la base, persona.panel (lo cambia cada uno).
+   Desde el 26-10-2026 (pedido de Miguel) se entra desde el menú del usuario, y quien tiene el permiso (el administrador, o la
+   persona a quien él se lo da: p.inicioTodos; en la base persona.inicio_todos) elige si el cambio es solo para él, para un rol
+   (rol.panel) o para toda la empresa (S.inicioEmpresa; en la base empresa.inicio). Cada persona parte del Inicio de su rol, si
+   no del de la empresa, y si arma el suyo lo mantiene («Volver al original» la devuelve al de su rol o al de la empresa).
+   «Actividad reciente» también pasó al menú del usuario (solo administrador). */
 const PANELES={kpis:'Cifras de arriba',tudia:'Tu día',procesos:'Ingresos y salidas de personal',avisos:'Avisos',alertas:'Alertas',
-  atajos:'Atajos',aprob:'Bandeja de aprobaciones',solicitudes:'Mis solicitudes',avance:'Avance por proyecto',actividad:'Actividad reciente'};
-const PANEL_IZQ=['tudia','procesos','avisos','alertas'],PANEL_DER=['atajos','aprob','solicitudes','avance','actividad'];
-// Si la persona aún no arma su Inicio y su rol tiene uno (rol.panel, mejoras2.js), parte del de su rol
-const panelDe=()=>{const p=person(S.me),pn=p?.panel||{},rp=p&&roleOf(p)?.panel;
-  if(!rp||pn.izq||pn.der||pn.widgets||pn.ocultos)return pn;
-  return Object.assign(JSON.parse(JSON.stringify(rp)),{menu:pn.menu,menuFav:pn.menuFav,menuOcultos:pn.menuOcultos,vistas:pn.vistas})};
+  atajos:'Atajos',aprob:'Bandeja de aprobaciones',solicitudes:'Mis solicitudes',avance:'Avance por proyecto'};
+const PANEL_IZQ=['tudia','procesos','avisos','alertas'],PANEL_DER=['atajos','aprob','solicitudes','avance'];
+const PANEL_PROPIO=['menu','menuFav','menuOcultos','vistas'];   // lo de cada persona que no viene del rol ni de la empresa
+const armoPanel=pn=>!!(pn&&(pn.izq||pn.der||pn.widgets||pn.ocultos));
+const puedeInicioTodos=()=>isAdmin()||!!person(S.me)?.inicioTodos;
+// Qué Inicio se está personalizando: '' = el mío, 'empresa' o 'r:<rol>' (solo con el permiso)
+const destinoPanel=()=>S.ui.personalizar&&S.ui.pdest&&puedeInicioTodos()?S.ui.pdest:'';
+const rolDestino=d=>d.startsWith('r:')?S.roles.find(r=>r.id===d.slice(2)):null;
+function panelComun(rol){const b=(rol&&rol.panel)||S.inicioEmpresa;return b?JSON.parse(JSON.stringify(b)):{}}
+// Si la persona aún no arma su Inicio, parte del de su rol (rol.panel) y, si no, del de toda la empresa
+const panelDe=()=>{const d=destinoPanel();if(d)return d==='empresa'?JSON.parse(JSON.stringify(S.inicioEmpresa||{})):panelComun(rolDestino(d));
+  const p=person(S.me),pn=p?.panel||{};if(armoPanel(pn))return pn;
+  const b=panelComun(p&&roleOf(p));if(!armoPanel(b))return pn;
+  PANEL_PROPIO.forEach(k=>{b[k]=pn[k]});return b};
 const panelOculto=id=>(panelDe().ocultos||[]).includes(id);
-function guardarPanel(fn){const p=person(S.me);if(!p)return;const x=JSON.parse(JSON.stringify(panelDe()));Object.keys(x).forEach(k=>x[k]===undefined&&delete x[k]);fn(x);p.panel=x;commit()}   // parte de lo que ve (el Inicio de su rol, si aún no arma el suyo)
+const nombreDestino=d=>d==='empresa'?'toda la empresa':d?`el rol ${rolDestino(d)?.name||''}`:'';
+function guardarPanel(fn){
+  const d=destinoPanel(),x=JSON.parse(JSON.stringify(panelDe()));Object.keys(x).forEach(k=>x[k]===undefined&&delete x[k]);fn(x);
+  if(d){PANEL_PROPIO.forEach(k=>delete x[k]);const vacio=!armoPanel(x);
+    if(d==='empresa'){if(vacio)delete S.inicioEmpresa;else S.inicioEmpresa=x}
+    else{const r=rolDestino(d);if(!r)return;if(vacio)delete r.panel;else r.panel=x}
+    addLog(`${meName()} cambió el Inicio de ${nombreDestino(d)}`);return commit()}
+  const p=person(S.me);if(!p)return;p.panel=x;commit()}   // parte de lo que ve (el Inicio de su rol o de la empresa, si aún no arma el suyo)
 function ordenPanel(){
   const pn=panelDe(),ws=(pn.widgets||[]).map(w=>w.id),todos=[...Object.keys(PANELES).filter(k=>k!=='kpis'),...ws];
   const izq=(pn.izq||PANEL_IZQ).filter(k=>todos.includes(k)),der=(pn.der||PANEL_DER).filter(k=>todos.includes(k)&&!izq.includes(k));
@@ -9401,10 +9776,12 @@ function armarInicio(P){
       <span class="bar-actions"><button type="button" class="iconbtn" data-pmov="${k}:-1" ${i===0?'disabled':''} aria-label="Subir" title="Subir">↑</button><button type="button" class="iconbtn" data-pmov="${k}:1" ${i===lista.length-1?'disabled':''} aria-label="Bajar" title="Bajar">↓</button>
       <button type="button" class="iconbtn" data-pcol="${k}" aria-label="Pasar a la otra columna" title="Pasar a la otra columna">${col==='izq'?'→':'←'}</button>
       ${w?`<button type="button" class="btn ghost sm" data-pwidget="${k}">Editar</button>`:''}<button type="button" class="btn ghost sm" data-pver="${k}">${oc?'Mostrar':'Ocultar'}</button></span></div>${h}</div>`};
-  const top=edit?`<div class="note pnote"><span><b>Personalizando tu Inicio.</b> Ordena, oculta o agrega paneles. Solo cambia para ti.</span>
-      <span class="bar-actions"><button class="btn ghost sm" data-pwidget="">+ Agregar panel</button><button class="btn ghost sm" data-pver="kpis">${panelOculto('kpis')?'Mostrar':'Ocultar'} las cifras de arriba</button><button class="btn ghost sm" data-preset>Volver al original</button><button class="btn sm" data-ppers>Listo</button></span></div>`:'';
-  return `${top}<div class="inicio-cols"><div class="icol">${o.izq.map(k=>caja(k,'izq')).join('')}</div><div class="icol">${o.der.map(k=>caja(k,'der')).join('')}</div></div>
-    ${edit?'':'<div class="bar-actions inicio-pers"><button class="btn ghost sm" data-ppers>Personalizar Inicio</button></div>'}`;
+  const d=destinoPanel(),todos=puedeInicioTodos();
+  const destSel=todos?`<label class="pdest">Cambiar el Inicio de<select data-pdest aria-label="A quién le cambia el Inicio"><option value="" ${!d?'selected':''}>Solo para mí</option>${S.roles.map(r=>`<option value="r:${r.id}" ${d==='r:'+r.id?'selected':''}>Todo el rol ${esc(r.name)}</option>`).join('')}<option value="empresa" ${d==='empresa'?'selected':''}>Toda la empresa</option></select></label>`:'';
+  const quien=d?`<b>Personalizando el Inicio de ${esc(nombreDestino(d))}.</b> Lo verán quienes ${d==='empresa'?'no tengan un Inicio de su rol ni hayan armado el suyo':'tienen ese rol y no han armado el suyo'}; cada uno ve sus propios datos.`:'<b>Personalizando tu Inicio.</b> Ordena, oculta o agrega paneles. Solo cambia para ti.';
+  const top=edit?`<div class="note pnote"><span>${quien}</span>${destSel}
+      <span class="bar-actions"><button class="btn ghost sm" data-pwidget="">+ Agregar panel</button><button class="btn ghost sm" data-pver="kpis">${panelOculto('kpis')?'Mostrar':'Ocultar'} las cifras de arriba</button><button class="btn ghost sm" data-preset>${d?'Quitar este Inicio':armoPanel(person(S.me)?.panel)?'Volver al de mi rol o empresa':'Volver al original'}</button><button class="btn sm" data-ppers>Listo</button></span></div>`:'';
+  return `${top}<div class="inicio-cols"><div class="icol">${o.izq.map(k=>caja(k,'izq')).join('')}</div><div class="icol">${o.der.map(k=>caja(k,'der')).join('')}</div></div>`;
 }
 
 /* ---------- Paneles propios ---------- */
@@ -9526,14 +9903,24 @@ const tablerosMenu=()=>tablerosVisibles().filter(t=>t.enMenu||menuPropio().inclu
 
 document.addEventListener('click',e=>{
   const c=s=>e.target.closest&&e.target.closest(s);let x;if(c('#modal'))return;
-  if(x=c('[data-ppers]')){S.ui.personalizar=!S.ui.personalizar;return renderMain()}
+  if(x=c('[data-ppers]')){S.ui.personalizar=!S.ui.personalizar;S.ui.pdest='';MENU_USR=false;if(S.ui.personalizar&&S.ui.route!=='inicio')return go('inicio');return renderAll()}
   if(x=c('[data-pwidget]'))return editWidget(x.dataset.pwidget);
-  if(x=c('[data-preset]'))return guardarPanel(p=>{const m=p.menu;Object.keys(p).forEach(k=>delete p[k]);if(m)p.menu=m});
+  if(x=c('[data-preset]'))return guardarPanel(p=>{const m={};PANEL_PROPIO.forEach(k=>{if(p[k])m[k]=p[k]});Object.keys(p).forEach(k=>delete p[k]);Object.assign(p,m)});
   if(x=c('[data-pver]')){const k=x.dataset.pver;return guardarPanel(p=>{const o=p.ocultos||[];p.ocultos=o.includes(k)?o.filter(y=>y!==k):[...o,k]})}
   if(x=c('[data-pmov]')){const [k,d]=x.dataset.pmov.split(':');return guardarPanel(p=>{const o=ordenPanel();const col=o.izq.includes(k)?'izq':'der',l=o[col],i=l.indexOf(k),j=i+(+d);if(j<0||j>=l.length)return;[l[i],l[j]]=[l[j],l[i]];p.izq=o.izq;p.der=o.der})}
   if(x=c('[data-pcol]')){const k=x.dataset.pcol;return guardarPanel(p=>{const o=ordenPanel();if(o.izq.includes(k)){o.izq=o.izq.filter(y=>y!==k);o.der.unshift(k)}else{o.der=o.der.filter(y=>y!==k);o.izq.unshift(k)}p.izq=o.izq;p.der=o.der})}
   if(x=c('[data-pfijar]')){const id=x.dataset.pfijar;return guardarPanel(p=>{const m=p.menu||[];p.menu=m.includes(id)?m.filter(y=>y!==id):[...m,id];if(!p.menu.length)delete p.menu})}
 });
+
+/* A quién le cambia el Inicio, y la actividad reciente en el menú del usuario (26-10-2026) */
+document.addEventListener('change',e=>{const s=e.target.closest&&e.target.closest('[data-pdest]');if(!s||!puedeInicioTodos())return;S.ui.pdest=s.value;renderMain()});
+function verActividad(){
+  if(!isAdmin())return;MENU_USR=false;renderTop();
+  const li=S.log.slice(0,60).map(a=>`<li><span class="when">${ago(a.at)}</span><span>${esc(a.text)}</span></li>`);
+  openModal('Actividad reciente',null,{},null,null,'',null,`<p class="hint wide">Lo último que se hizo en la empresa. El detalle de cada cambio, con el valor anterior y el nuevo, está en Ajustes → Registro de auditoría.</p>
+    <ul class="act wide">${li.join('')||'<li class="empty">Sin actividad todavía.</li>'}</ul>`,{noSave:1});
+}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-veract]');if(b){e.preventDefault();verActividad()}});
 /* ===== Mejoras del 24-10-2026 (IDEAS-Y-MEJORAS.md, pedido de Miguel) =====
    Apariencia por equipo (tamaño de letra y densidad), deshacer el último cambio, dictado por voz, calendario para
    Google u Outlook (.ics), menú a la medida, vistas guardadas, importar desde Excel a cualquier área y campos
@@ -9737,7 +10124,7 @@ document.addEventListener('change',e=>{if(modalCtx&&e.target.closest('#modal'))c
 
 /* ---------- Numeración: prefijo, ancho e inicio por registro (S.correlativos) ---------- */
 const CORREL_DEF={ocs:['OC-','Órdenes de compra'],cotizaciones:['CC-','Cuadros comparativos'],edps:['EDP-','Estados de pago'],ofertas:['OF-','Ofertas a clientes'],
-  fondos:['SF-','Solicitudes de fondos'],informes:['IG-','Informes de gastos'],denuncias:['DK-','Denuncias Ley Karin']};
+  fondos:['SF-','Solicitudes de fondos'],informes:['IG-','Informes de gastos'],denuncias:['DK-','Denuncias Ley Karin'],guias:['GD-','Guías de despacho']};
 function siguienteNum(ent){
   const c=(S.correlativos||{})[ent]||{},pre=c.prefijo||CORREL_DEF[ent]?.[0]||'',ancho=Math.min(8,Math.max(1,+c.ancho||4)),k=ENT[ent]?.autonum?.[0]||'num';
   const n=Math.max((+c.inicio||1)-1,...coll(ent).map(x=>{const v=String(x[k]||'');return v.startsWith(pre)?parseInt(v.slice(pre.length).replace(/\D/g,''))||0:0}))+1;
@@ -9820,11 +10207,7 @@ function conMarca(html,tipo){
 function ocHTML(o){
   const prov=S.d.contacts.find(c=>c.id===o.proveedor),cur=o.moneda||'CLP',iva=cur==='CLP',neto=+o.neto||0;
   return conMarca(`<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>${esc(o.num)}</title>
-<style>body{font:14px/1.5 "IBM Plex Sans",system-ui,sans-serif;color:#0B2E4F;margin:0 auto;padding:24px;max-width:820px}h1{font:700 24px Rubik,system-ui,sans-serif;margin:0}table{border-collapse:collapse;width:100%;margin-top:16px}th,td{border:1px solid #D6E7F5;padding:6px 8px;text-align:left}td.r,th.r{text-align:right}th{background:#EEF5FB;font-size:12px;text-transform:uppercase}.meta{color:#335B82}.firma{display:flex;gap:40px;margin-top:60px}.firma div{flex:1;border-top:1px solid #335B82;padding-top:6px;text-align:center;color:#335B82}</style><link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0B2E4F">
-<link rel="icon" href="icono.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icono-192.png">
-</head><body>
+<style>body{font:14px/1.5 "IBM Plex Sans",system-ui,sans-serif;color:#0B2E4F;margin:0 auto;padding:24px;max-width:820px}h1{font:700 24px Rubik,system-ui,sans-serif;margin:0}table{border-collapse:collapse;width:100%;margin-top:16px}th,td{border:1px solid #D6E7F5;padding:6px 8px;text-align:left}td.r,th.r{text-align:right}th{background:#EEF5FB;font-size:12px;text-transform:uppercase}.meta{color:#335B82}.firma{display:flex;gap:40px;margin-top:60px}.firma div{flex:1;border-top:1px solid #335B82;padding-top:6px;text-align:center;color:#335B82}</style></head><body>
 <h1>Orden de compra ${esc(o.num)}</h1><p class="meta">${esc(S.company||'')} · ${fmt(o.fecha||TODAY)}${o.entrega?` · entrega estimada ${fmt(o.entrega)}`:''}<br>Proveedor: <b>${esc(prov?.nombre||'')}</b>${prov?.rut?` · RUT ${esc(prov.rut)}`:''}${o.proyecto?` · ${esc(refName('projects',o.proyecto))}`:''}</p>
 <table><thead><tr><th>Descripción</th><th class="r">Cantidad</th><th class="r">Precio unitario</th><th class="r">Subtotal</th></tr></thead><tbody>${(o.lineas||[]).map(l=>`<tr><td>${esc(l.d)}</td><td class="r">${esc(String(l.q).replace('.',','))}</td><td class="r">${fmtMoney(l.p,cur)}</td><td class="r">${fmtMoney(l.q*l.p,cur)}</td></tr>`).join('')}</tbody></table>
 <table><tbody><tr><td>Neto</td><td class="r">${fmtMoney(neto,cur)}</td></tr>${iva?`<tr><td>IVA 19 %</td><td class="r">${fmtMoney(Math.round(neto*.19))}</td></tr><tr><td><b>Total</b></td><td class="r"><b>${fmtMoney(Math.round(neto*1.19))}</b></td></tr>`:''}</tbody></table>
@@ -9993,6 +10376,51 @@ function karinPortal(){
     ${ms.map(r=>`<div class="appr"><span class="modtag">${esc(r.num||'')}</span><span class="tt" data-rec="denuncias:${r.id}"><span class="tname">${esc(r.tipo)}</span><span class="hint">${fmt(r.fecha)}</span></span>${tonePill(ENT.denuncias.status(r))}</div>`).join('')}
     <div class="bar-actions"><button class="btn sm" data-newrec="denuncias">Hacer una denuncia</button></div></section>`;
 }
+/* ===== Trazabilidad entre documentos (pedido de Miguel, 01-11-2026) =====
+   Cuadro comparativo → OC → embarque, guías de despacho y movimientos de bodega → factura → notas de crédito, y estado de
+   pago → factura. Cada ficha de esos documentos muestra la cadena completa de documentos relacionados (no solo los
+   vecinos), para que todas las áreas vean de dónde viene y a dónde fue cada cosa.
+   - Los enlaces son los campos que ya existen: cc.oc, ship.oc, doc.oc, doc.guia, nc.factura, guia.oc, move.guia y
+     edp.factura (en la base, las mismas llaves foráneas). No se guarda nada nuevo.
+   - Cada documento se abre solo si quien mira lo ve en su área (regVisible, igual que la base); si no, sale «Sin acceso». */
+const TRAZA_ORDEN=['cotizaciones','ocs','ships','guias','moves','docs','ncs','edps'];
+const TRAZA_TIPO={cotizaciones:'Cuadro comparativo',ocs:'Orden de compra',ships:'Embarque',guias:'Guía de despacho',moves:'Movimiento de bodega',docs:'Factura',ncs:'Nota de crédito',edps:'Estado de pago'};
+// Vecinos directos de un documento: [[entidad, id], …]
+function trazaVecinos(ent,r){
+  const de=(e,f)=>(coll(e)||[]).filter(f).map(x=>[e,x.id]),uno=(e,id)=>id?[[e,id]]:[];
+  switch(ent){
+    case 'cotizaciones':return uno('ocs',r.oc);
+    case 'ocs':return [...de('cotizaciones',c=>c.oc===r.id),...de('ships',x=>x.oc===r.id),...de('docs',d=>d.oc===r.id),...de('guias',g=>g.oc===r.id)];
+    case 'ships':return uno('ocs',r.oc);
+    case 'guias':return [...uno('ocs',r.oc),...de('moves',m=>m.guia===r.id),...de('docs',d=>d.guia===r.id)];
+    case 'moves':return uno('guias',r.guia);
+    case 'docs':return [...uno('ocs',r.oc),...uno('guias',r.guia),...de('ncs',n=>n.factura===r.id),...de('edps',x=>x.factura===r.id)];
+    case 'ncs':return uno('docs',r.factura);
+    case 'edps':return uno('docs',r.factura);
+  }
+  return [];
+}
+// Todos los documentos conectados, recorriendo la cadena en ambos sentidos (hasta 40)
+function trazaDe(ent,r){
+  const visto=new Set([ent+':'+r.id]),cola=[[ent,r]],res=[];
+  while(cola.length&&res.length<40){
+    const [e,x]=cola.shift();
+    trazaVecinos(e,x).forEach(([e2,id])=>{const k=e2+':'+id;if(visto.has(k))return;visto.add(k);
+      const y=(coll(e2)||[]).find(z=>z.id===id);if(!y)return;res.push([e2,y]);cola.push([e2,y])});
+  }
+  const fecha=x=>x.fecha||x.emision||x.etd||'';
+  return res.sort((a,b)=>TRAZA_ORDEN.indexOf(a[0])-TRAZA_ORDEN.indexOf(b[0])||fecha(a[1]).localeCompare(fecha(b[1])));
+}
+function trazaBloque(ent,r){
+  if(!r||!r.id||!TRAZA_ORDEN.includes(ent))return '';
+  const l=trazaDe(ent,r);if(!l.length)return '';
+  const item=([e,x])=>{const area=areaDeRegistro(e,x),st=ENT[e].status?ENT[e].status(x):null;
+    const tit=area?`<button type="button" class="lnkbtn" data-rec="${e}:${x.id}:${area}">${esc(audTitulo(e,x))}</button>`:`<span>${esc(audTitulo(e,x))}</span> <span class="hint">(sin acceso)</span>`;
+    return `<li><span class="traza-tipo">${TRAZA_TIPO[e]}</span><span class="traza-doc">${tit}${x.fecha||x.emision?` <span class="hint">· ${fmt(x.fecha||x.emision)}</span>`:''}</span>${st&&st.label?tonePill(st):''}</li>`};
+  return `<div class="wide traza"><b>Trazabilidad: documentos relacionados</b><ol class="traza-lista">${l.map(item).join('')}</ol></div>`;
+}
+// Se suma al bloque extra de la ficha de cada documento de la cadena
+TRAZA_ORDEN.forEach(e=>{const ent=ENT[e];if(!ent)return;const x0=ent.extra;ent.extra=(r,...m)=>(x0?x0(r,...m)||'':'')+trazaBloque(e,r)});
 /* ===== Íconos del menú al estilo «Marino + Cielo · Sitio web» (22-10-2026, pedido de Miguel) =====
    Línea fina (1,5 px, extra11.css) y los mismos dibujos del archivo: tablero de proyectos, casco de terreno, carro
    de compras, camión de logística, grupo de personas y calculadora de contabilidad. Se cargan al final para
