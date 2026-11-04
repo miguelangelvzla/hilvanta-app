@@ -918,11 +918,11 @@ button.htx:hover b{color:var(--accent-t)}
 .resumen .hilo .hnodo{background:#0F3D68;border-color:#5D7480}
 .resumen .hilo .h-ok .hnodo{background:#3FA86C;border-color:#3FA86C}
 .resumen .hilo .h-late .hnodo{background:#3A1E1C;border-color:#EC6B63;color:#F08A84}
-.resumen .hilo .htx span{color:#ADD0EC}
+.resumen .hilo .htx span,.resumen .hilo .h-ok .htx b{color:#ADD0EC}
 
 /* La tarea de ahora */
 .foco{flex:1;min-width:0;background:var(--hcard);border:1px solid var(--hcard-line);color:#EEF5FB;border-radius:20px;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
-.foco-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;font-weight:600;color:#4A99D1}
+.foco-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;font-weight:600;color:#7DB4DF}
 .foco-tit{display:flex;gap:14px;align-items:center;min-width:0}
 .foco-tit > span:last-child{display:flex;flex-direction:column;min-width:0}
 .foco-tit b{font:600 20px/24px var(--display);letter-spacing:-.01em;overflow-wrap:anywhere}
@@ -1102,7 +1102,7 @@ table.rt.compacta{min-width:0;width:100%}table.rt.compacta td.nm{white-space:nor
 .tbbar .filters{flex-wrap:wrap}
 .tbgrupo{margin:14px 0;border-left:4px solid var(--g);padding-left:10px}
 .tbghead{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.tbghead b{color:var(--g);font:600 16px var(--display)}
+.tbghead b{color:color-mix(in srgb,var(--g) 55%,var(--ink));font:600 16px var(--display)}   /* el color del grupo, oscurecido para que se lea */
 .tbghead b[role=button]{cursor:pointer}
 .tbgtog{border:0;background:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 4px}
 table.tbt{min-width:0;width:100%}
@@ -1231,7 +1231,7 @@ svg.i{stroke-width:1.5}
 .toppill:hover{background:rgba(74,153,209,.14)}
 .toppill.on{background:#144E85;border-color:#144E85;font-weight:700}
 .toppill .badge{background:#4A99D1;color:#071D33;box-shadow:none}
-.rail .rrot{display:block;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#4A99D1;padding:14px 12px 4px;white-space:nowrap}
+.rail .rrot{display:block;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7DB4DF;padding:14px 12px 4px;white-space:nowrap}
 .rail .rnav{display:flex;flex-direction:column;align-items:stretch;gap:2px;flex-wrap:nowrap}
 .rail .ritem{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:4px;border:0;border-radius:14px;background:transparent;color:#ADD0EC;font:500 14px var(--body);text-align:left;cursor:pointer;white-space:nowrap}
 .rail .ritem:hover{background:rgba(255,255,255,.06);color:#FFFFFF}
@@ -1403,6 +1403,12 @@ label:has(> .micro){position:relative}
 .txtdocs{display:flex;flex-direction:column;gap:6px}
 .txtdocs details.mas label{display:block;margin-top:8px}
 #karInv{min-height:96px}
+/* Letra grande en el teléfono (revisión del 04-11-2026): con el zoom no cabe el nombre junto a los botones de la barra,
+   y el botón de la IA lo tapaba. Queda solo el ícono de la marca. */
+@media (max-width:480px){:root[data-letra="grande"] .topnav .logo,:root[data-letra="grande"] .topnav .ver{display:none}}
+/* En el teléfono, los avisos emergentes (toast) van sobre la barra inferior, no encima de ella (revisión del 04-11-2026) */
+@media (max-width:860px){body:has(.botnav:not([hidden])) .toast{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
+  body:has(#drawer:not([hidden])) .toast,body:has(#modalScrim:not([hidden])) .toast,body:has(.side.open) .toast{bottom:calc(20px + env(safe-area-inset-bottom,0px))}}
 /* ===== 26-10-2026: revisión de informes gasto a gasto (revision.js), notas de crédito y guías de despacho, y
    personalización en el menú del usuario ===== */
 .rev .toolbar{flex-wrap:wrap;gap:10px}
@@ -1444,8 +1450,8 @@ label:has(> .micro){position:relative}
 .rev-edita summary{cursor:pointer}
 .rev-edita[open] summary{margin-bottom:4px}
 .btn.rev-ok{background:#17804C;color:#fff}
-.btn.rev-no{color:#B4312A;border-color:#F0ADA8}
-.btn.rev-dev{color:#8A5B00;border-color:#F2C77A}
+.btn.rev-no{color:var(--t-stuck);border-color:#F0ADA8}
+.btn.rev-dev{color:var(--t-prog);border-color:#F2C77A}
 .rev-hist ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:13px}
 .rev-pie{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
 .rev-pie .btn[disabled]{opacity:.5;cursor:not-allowed}
@@ -1501,6 +1507,55 @@ label:has(> .micro){position:relative}
 <script>window.HILVANTA_SERVIDOR = {url: 'https://jdcvdrorlddydiikmhlf.supabase.co', anon: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkY3Zkcm9ybGRkeWRpaWttaGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwMzE3NjEsImV4cCI6MjEwNzYwNzc2MX0.36cGCHe4x7181UIum9HnUTFPAjwrJpfkHznKWCicGkI'};
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 <script>
+/* ===== Registro de errores de la app (04-11-2026) =====
+   Va primero en la plantilla para escuchar desde el arranque. Cada error de JavaScript (window 'error') y cada promesa
+   rechazada sin atender ('unhandledrejection') se anota:
+   - en este navegador (localStorage 'hilvanta-errores', los 30 más recientes), para verlo aunque no haya servidor;
+   - en la versión conectada, también en la tabla error_app de la base, a nombre de quien usa la app. Solo un
+     administrador los lee (Ajustes → «Errores de la app»).
+   Para no inundar la base: a lo más 20 envíos por sesión y el mismo mensaje una sola vez. Nunca molesta a quien usa la
+   app ni corta lo que estaba haciendo: no muestra nada ni detiene el error (las pruebas lo siguen viendo). */
+const ERR_CLAVE='hilvanta-errores',ERR_MAX=30,ERR_ENVIOS=20;
+const ERR_VISTOS=new Set();let errEnviados=0,errBase=null;
+function erroresLocales(){try{return JSON.parse(localStorage.getItem(ERR_CLAVE)||'[]')}catch(e){return []}}
+function anotarError(mensaje,detalle,donde){
+  try{
+    const m=String(mensaje||'Error sin mensaje').slice(0,500);
+    const sec=typeof S!=='undefined'&&S&&S.ui?S.ui.route||'':'';
+    const e={en:new Date().toISOString(),mensaje:m,detalle:String(detalle||'').slice(0,2000),donde:[sec,donde].filter(Boolean).join(' · ').slice(0,300),
+      version:typeof VERSION!=='undefined'?VERSION:'',navegador:navigator.userAgent.slice(0,300)};
+    try{const l=erroresLocales();l.unshift(e);localStorage.setItem(ERR_CLAVE,JSON.stringify(l.slice(0,ERR_MAX)))}catch(x){}
+    if(ERR_VISTOS.has(m)||errEnviados>=ERR_ENVIOS)return;ERR_VISTOS.add(m);
+    if(typeof conectada!=='function'||!conectada()||typeof SRV==='undefined'||!SRV||SRV.offline||!SRV.E||!S?.me)return;
+    errEnviados++;
+    SB.from('error_app').insert([{empresa_id:SRV.E,persona_id:S.me,mensaje:e.mensaje,detalle:e.detalle||null,donde:e.donde||null,version:e.version,navegador:e.navegador}]).then(()=>{},()=>{});
+  }catch(x){}   // el registro de errores nunca debe causar otro error
+}
+window.addEventListener('error',ev=>{
+  if(!ev.message&&ev.target&&ev.target!==window)return;   // un recurso que no cargó (imagen, script): no es un error de la app
+  anotarError(ev.message,ev.error&&ev.error.stack,ev.filename?`${String(ev.filename).split('/').pop()}:${ev.lineno||''}`:'');
+});
+window.addEventListener('unhandledrejection',ev=>{const r=ev.reason;anotarError(r&&r.message||String(r),r&&r.stack,'promesa')});
+
+// Ajustes → «Errores de la app» (solo administrador): los de este equipo y, en la versión conectada, los de toda la empresa
+function erroresSection(){
+  const fila=x=>`<li><b>${esc(x.mensaje)}</b><br><span class="hint">${esc(fmtFechaHora(x.en))}${x.persona?` · ${esc(x.persona)}`:''}${x.donde?` · ${esc(x.donde)}`:''}${x.version?` · versión ${esc(x.version)}`:''}</span></li>`;
+  const loc=erroresLocales();
+  const base=errBase===null?(typeof conectada==='function'&&conectada()?`<div class="bar-actions"><button class="btn ghost sm" data-act="errVerBase">Ver los de toda la empresa</button></div>`:'')
+    :errBase.error?`<p class="hint">No se pudieron leer: ${esc(errBase.error)}</p>`
+    :`<h3>Toda la empresa (últimos 50)</h3><ul class="act">${errBase.filas.map(fila).join('')||'<li class="empty">Nadie ha tenido errores.</li>'}</ul>`;
+  return `<section class="box" id="errsec"><h2>Errores de la app</h2><p class="hint">Los errores que la app tuvo al usarse, para corregirlos sin que nadie tenga que avisar. En la versión conectada se guardan en el servidor; solo los ve un administrador.</p>
+    <h3>En este equipo</h3><ul class="act">${loc.slice(0,10).map(fila).join('')||'<li class="empty">No hay errores en este equipo.</li>'}</ul>
+    ${loc.length?`<div class="bar-actions"><button class="btn ghost sm" data-act="errLimpiar">Borrar los de este equipo</button></div>`:''}${base}</section>`;
+}
+function fmtFechaHora(iso){const d=new Date(iso);if(isNaN(d))return '';const p=n=>String(n).padStart(2,'0');return `${p(d.getDate())}-${p(d.getMonth()+1)}-${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`}
+async function errVerBase(){
+  try{const {data,error}=await SB.from('error_app').select('en,mensaje,donde,version,persona_id').order('en',{ascending:false}).limit(50);
+    if(error)throw error;errBase={filas:(data||[]).map(r=>({...r,persona:(person(r.persona_id)||{}).name||''}))}}
+  catch(e){errBase={error:e.message||String(e)}}
+  renderMain();
+}
+
 /* ===== Datos base ===== */
 /* Las claves de guardado conservan el nombre anterior (Nexo) a propósito: si cambian, la app deja de
    encontrar los datos que cada usuario ya tiene guardados en su navegador. */
@@ -3352,7 +3407,8 @@ function auditar(cambios,foto){
 function audCampo(col,k){
   const f=col==='tasks'?TASKF.concat([{k:'priority',label:'Prioridad'},{k:'desc',label:'Descripción'},{k:'tags',label:'Etiquetas'},{k:'subtasks',label:'Subtareas'},{k:'comments',label:'Comentarios'},{k:'projectId',label:'Proyecto',type:'ref',ref:'projects'}]).find(x=>x.k===k)
     :ENT[col]?fieldsOf(col).find(x=>x.k===k):null;
-  const extra={aprobaciones:'Aprobaciones',aprobador:'Aprobado por',roleId:'Rol',pin:'PIN',name:'Nombre',client:'Cliente',site:'Sitio',status:'Estado',start:'Inicio',end:'Término',color:'Color',company:'Nombre de la empresa',perms:'Permisos',admin:'Administrador',doneAt:'Lista el',horas:'Horas estimadas',capacidad:'Horas por semana'};
+  const extra={aprobaciones:'Aprobaciones',aprobador:'Aprobado por',roleId:'Rol',pin:'PIN',name:'Nombre',client:'Cliente',site:'Sitio',status:'Estado',start:'Inicio',end:'Término',color:'Color',company:'Nombre de la empresa',perms:'Permisos',admin:'Administrador',doneAt:'Lista el',horas:'Horas estimadas',capacidad:'Horas por semana',
+    fechaEmision:'Fecha de emisión',panel:'Inicio personalizado',permisos:'Permisos',inicioTodos:'Puede cambiar el Inicio de todos',columnas:'Columnas',grupos:'Grupos',datos:'Datos',at:'Fecha y hora',revisiones:'Revisión gasto a gasto',firmas:'Firmas',lineas:'Líneas',acceso:'Acceso',vistas:'Vistas',grupo:'Grupo',orden:'Orden'};
   return {label:f?autoLabel(f):extra[k]||k,f};
 }
 function audMostrar(col,k,v){
@@ -5394,6 +5450,7 @@ function editFormulario(id,preset,mod){
   const E=ENT.formularios,isNew=!id;
   if(isNew&&!canCreate('formularios','proyectos'))return toast('Tu rol no permite llenar formularios de terreno');
   const f=isNew?Object.assign({fecha:TODAY,autor:S.me,respuestas:{},firmas:[],participantes:[]},preset||{}):S.d.formularios.find(x=>x.id===id);if(!f)return;
+  if(!FORMS[f.tipo])f.tipo=Object.keys(FORMS)[0];   // sin tipo (o con uno que ya no existe), el primero: la ficha no se cae
   if(!isNew&&!canSee('formularios',f,'proyectos'))return;
   const ro=!isNew&&!canEditRec('formularios',f,'proyectos'),ctx={f,ro,firmas:[...(f.firmas||[])]};
   openModal(isNew?`Nuevo: ${esc(FORMS[f.tipo].n)}`:esc(E.title(f)),null,{},o=>{
@@ -8728,6 +8785,7 @@ ${miResumenBloque()}
   ${feriadosSection()}
   ${integracionesSection()}
   ${audSection()}
+  ${erroresSection()}
   <section class="box"><h2>Áreas activas</h2><p class="hint">Cada empresa activa solo las áreas que usa. Si desactivas una, sus datos se conservan.</p>
     <div class="modlist">${MODORDER.map(k=>`<label class="subl"><input type="checkbox" data-modtoggle="${k}" ${modOn(k)?'checked':''}>${MOD[k].name}</label>`).join('')}</div></section>
   ${mine}
@@ -9304,12 +9362,13 @@ ICON.filtro='<path d="M4 5h16l-6 8v5l-4 2v-7z"/>';
    qué tableros aparece (enTablerosBloque). */
 const COL_TIPOS={texto:'Texto',numero:'Número',dinero:'Dinero (CLP)',fecha:'Fecha',estado:'Estado (etiquetas de color)',persona:'Persona',lista:'Lista desplegable',casilla:'Casilla (sí o no)',proyecto:'Nota de venta (proyecto)',registro:'Registro de Hilvanta (OC, factura, activo…)',dato:'Dato de un registro (por ejemplo, el estado de la OC)',formula:'Fórmula'};
 const SOLO_LECTURA_TB=['formula','dato'];   // se calculan: no se escriben
-const ETQ_COLORES=['#8A979D','#E9A23B','#1F9D61','#D9463E','#1A62A0','#7A5AA6','#E07A2E','#3B6FB6','#B0577A','#5B8C2A'];
+const ETQ_COLORES=['#8A979D','#E9A23B','#1F9D61','#C8423B','#1A62A0','#7A5AA6','#E07A2E','#3B6FB6','#B0577A','#5B8C2A'];
 const ACC_TB={ninguno:0,ver:1,editar:2};
 const ICON_TABLERO='<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M9.5 9.5v10M15 9.5v10"/>';
 ICON.tablero=ICON_TABLERO;
 // Texto legible sobre el color de la etiqueta
-const tintaDe=c=>{const n=parseInt(String(c||'#888').slice(1),16),r=n>>16&255,g=n>>8&255,b=n&255;return (0.299*r+0.587*g+0.114*b)>150?'#0B2E4F':'#FFFFFF'};
+// Tinta de una etiqueta de color: blanco o marino oscuro, la que más contraste tenga con el fondo (WCAG)
+const tintaDe=c=>{const n=parseInt(String(c||'#888').slice(1),16),l=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)},L=.2126*l(n>>16&255)+.7152*l(n>>8&255)+.0722*l(n&255);return 1.05/(L+.05)>=(L+.05)/(.0122+.05)?'#FFFFFF':'#071D33'};
 
 /* ---------- Acceso ---------- */
 function accesoTablero(t,pid=S.me){
@@ -10492,6 +10551,8 @@ function act(a){
     case 'asistente':closeSide();abrirAsistente();break;
     case 'closeBusca':cerrarBusca();break;
     case 'audMas':AUDF.n+=50;renderMain();break;
+    case 'errVerBase':errVerBase();break;
+    case 'errLimpiar':try{localStorage.removeItem(ERR_CLAVE)}catch(e){}renderMain();break;
     case 'closeDrawer':closeDrawer();break;
     case 'closeModal':closeModal();break;
     case 'newProject':closeSide();newProject();break;
