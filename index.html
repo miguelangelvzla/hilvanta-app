@@ -1465,6 +1465,13 @@ label:has(> .micro){position:relative}
 .traza-tipo{font-size:12px;color:var(--muted);min-width:132px}
 .traza-doc{flex:1;min-width:0;overflow-wrap:anywhere}
 @media (max-width:560px){.traza-tipo{min-width:0;width:100%}}
+
+/* Tablas largas por partes (rendimiento, 04-11-2026) */
+.tabla-mas{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:8px 4px 0}
+
+/* Aviso de cambios de otras personas aplicados en vivo (simultaneos.js) */
+.vivo{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:14px;box-shadow:0 6px 18px rgba(7,29,51,.25)}
+@media (max-width:860px){.vivo{bottom:88px}}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0B2E4F">
@@ -1626,7 +1633,17 @@ const toISO=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const P=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
 const addD=(s,n)=>{const d=P(s);d.setDate(d.getDate()+n);return toISO(d)};
 const addM=(s,n)=>{const d=P(s);d.setMonth(d.getMonth()+n);return toISO(d)};
-const diff=(a,b)=>Math.round((P(b)-P(a))/864e5);
+const diaN=s=>{const[a,b,c]=s.split('-');return Date.UTC(+a,b-1,+c)/864e5};   // días desde 1970, sin crear un Date local (rápido)
+const diff=(a,b)=>Math.round(diaN(b)-diaN(a));
+/* Cálculos que recorren colecciones completas (stock por producto, gastos por informe, fotos de boletas…) se arman una
+   vez como índice y se reutilizan (rendimiento, 04-11-2026). Un índice vale mientras su colección sea el mismo arreglo
+   con el mismo largo, y se descartan todos en cada guardado y cada vez que se dibuja (memoLimpiar en save y renderMain),
+   así un cambio en un registro nunca deja un total viejo en pantalla. */
+let MEMO=new Map();
+const memoLimpiar=()=>{MEMO=new Map()};
+function indice(k,arr,fn){const m=MEMO.get(k);if(m&&m.arr===arr&&m.len===arr.length)return m.v;const v=fn(arr);MEMO.set(k,{arr,len:arr.length,v});return v}
+// Agrupa un arreglo por una clave: Map clave → [registros]
+const agrupar=(arr,f)=>{const m=new Map();arr.forEach(x=>{const k=f(x);if(k==null||k==='')return;const l=m.get(k);l?l.push(x):m.set(k,[x])});return m};
 const isDate=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v);
 const monthsBetween=(a,b)=>{const x=P(a),y=P(b);let m=(y.getFullYear()-x.getFullYear())*12+y.getMonth()-x.getMonth();if(y.getDate()<x.getDate())m--;return Math.max(0,m)};
 const TODAY=toISO(new Date());
@@ -1636,7 +1653,8 @@ const fmtAt=a=>fmt(toISO(new Date(a)));
 // Negativos al estilo chileno: -$668.500 (Intl en es-CL escribe «$-668.500»); si al redondear queda en cero, sin signo
 function fmtMoney(n,cur='CLP'){n=+n||0;if(n<0){const t=fmtMoney(-n,cur);return /[1-9]/.test(t)?'-'+t:t}
   if(cur==='UF')return 'UF '+n.toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2});
-  try{return new Intl.NumberFormat('es-CL',{style:'currency',currency:cur,maximumFractionDigits:cur==='CLP'?0:2}).format(n)}catch(e){return cur+' '+n.toLocaleString('es-CL')}}
+  try{return (FMT_MON[cur]||(FMT_MON[cur]=new Intl.NumberFormat('es-CL',{style:'currency',currency:cur,maximumFractionDigits:cur==='CLP'?0:2}))).format(n)}catch(e){return cur+' '+n.toLocaleString('es-CL')}}
+const FMT_MON={};   // un formateador por moneda (crearlo en cada monto era lo más lento de las tablas largas)
 // «1 vencida», «3 vencidas»: cantidad con su palabra en singular o plural
 const cuenta=(n,s,p)=>`${n} ${n===1?s:p}`;
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -1956,10 +1974,34 @@ function defaultPlantillas(){
      {col:'auditoria', op:'anotar', reg}    entrada nueva del registro de auditoría (auditoria.js)
      {col:'ajustes', op:'ajustar', clave, valor}   empresa, áreas activas o campos personalizados
    Lo que es solo de esta pantalla (S.ui, S.me) no genera cambios. */
+/* Datos grandes (rendimiento, 04-11-2026). localStorage admite unos 5 MB por sitio y una empresa con un año de datos
+   pesa bastante más: antes, al pasarse, el guardado fallaba en silencio. Ahora lo que no cabe va a IndexedDB (del orden
+   de cientos de MB) con la misma clave, y se quita de localStorage para que nunca quede una copia vieja ahí:
+   - guardarLocal(k, texto): localStorage si cabe; si no, IndexedDB. Las escrituras en IndexedDB van en fila, en orden.
+   - leerLocal(k): primero localStorage; si no está, IndexedDB (asíncrono).
+   - borrarLocal(k): de los dos lados.
+   Con los datos de ejemplo todo cabe en localStorage y nada cambia. */
+const IDB_LOCAL=(()=>{let db=null,fila=Promise.resolve();const enIDB=new Set();
+  const abrir=()=>db||(db=new Promise((ok,mal)=>{try{const r=indexedDB.open('hilvanta',1);r.onupgradeneeded=()=>r.result.createObjectStore('datos');r.onsuccess=()=>ok(r.result);r.onerror=()=>mal(r.error)}catch(e){mal(e)}}));
+  const op=(modo,f)=>abrir().then(d=>new Promise((ok,mal)=>{const t=d.transaction('datos',modo),q=f(t.objectStore('datos'));t.oncomplete=()=>ok(q&&q.result);t.onerror=()=>mal(t.error)}));
+  const enFila=f=>(fila=fila.then(f,f).catch(()=>{}));
+  return {enIDB,
+    guardar:(k,v)=>{enIDB.add(k);return enFila(()=>op('readwrite',s=>s.put(v,k)))},
+    borrar:k=>{if(!enIDB.has(k))return Promise.resolve();enIDB.delete(k);return enFila(()=>op('readwrite',s=>s.delete(k)))},
+    leer:k=>fila.then(()=>op('readonly',s=>s.get(k))).then(v=>{if(v!=null)enIDB.add(k);return v??null}).catch(()=>null)};
+})();
+// «<clave>|idb» en localStorage marca que esa clave está en IndexedDB (así al abrir solo se espera a IndexedDB si hace falta)
+const marcaIDB=k=>k+'|idb',estaEnIDB=k=>{try{return localStorage.getItem(marcaIDB(k))==='1'}catch(e){return false}};
+function guardarLocal(k,txt){
+  try{localStorage.setItem(k,txt);if(estaEnIDB(k)){localStorage.removeItem(marcaIDB(k));IDB_LOCAL.enIDB.add(k);IDB_LOCAL.borrar(k)}return true}
+  catch(e){try{localStorage.removeItem(k);localStorage.setItem(marcaIDB(k),'1')}catch(x){}IDB_LOCAL.guardar(k,txt);return false}}
+async function leerLocal(k){let t=null;try{t=localStorage.getItem(k)}catch(e){}return t!=null?t:estaEnIDB(k)?await IDB_LOCAL.leer(k):null}
+const leerLocalJSON=async k=>{try{return JSON.parse(await leerLocal(k)||'null')}catch(e){return null}};
+function borrarLocal(k){const idb=estaEnIDB(k);try{localStorage.removeItem(k);localStorage.removeItem(marcaIDB(k))}catch(e){}if(!idb)return Promise.resolve();IDB_LOCAL.enIDB.add(k);return IDB_LOCAL.borrar(k)}
 const ALMACEN_NAVEGADOR={
   leer(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}},
   leerAnterior(){try{return JSON.parse(localStorage.getItem(OLD))}catch(e){return null}},
-  guardar(s){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}},
+  guardar(s,cambios,txt){guardarLocal(KEY,txt||JSON.stringify(s))},
   leerPrefs(){try{return JSON.parse(localStorage.getItem(PREF))||{}}catch(e){return {}}},
   guardarPrefs(p){try{localStorage.setItem(PREF,JSON.stringify(p))}catch(e){}}
 };
@@ -2030,7 +2072,7 @@ function normalize(){
    Antes corren las automatizaciones sobre esos cambios, se crean los avisos de la app (asignaciones, comentarios,
    aprobaciones) y se anota la auditoría. modo: true = nada de eso (datos de ejemplo, respaldos);
    'fechas' = solo auditoría (lo que hicieron las automatizaciones de fecha). */
-function save(modo){let f=fotoDe(S),cambios=FOTO?cambiosEntre(FOTO,f,S):[];
+function save(modo){memoLimpiar();let f=fotoDe(S),cambios=FOTO?cambiosEntre(FOTO,f,S):[];
   const otra=()=>{f=fotoDe(S);cambios=cambiosEntre(FOTO,f,S)};
   if(modo!==true&&FOTO){
     if(!modo&&correrAuto(cambios,FOTO))otra();
@@ -2038,9 +2080,10 @@ function save(modo){let f=fotoDe(S),cambios=FOTO?cambiosEntre(FOTO,f,S):[];
     if(!modo&&avisosSistema(cambios,FOTO))otra();
     if(auditar(cambios,FOTO))otra()}
   // Deshacer (mejoras.js): la copia de antes de cada cambio de datos hecho a mano
-  if(cambios.some(c=>['crear','cambiar','borrar'].includes(c.op))){if(!modo&&ULTIMO){DESHACER={s:ULTIMO,at:Date.now()};if(typeof mostrarDeshacer==='function')mostrarDeshacer()}ULTIMO=JSON.stringify(S)}
-  else if(!ULTIMO)ULTIMO=JSON.stringify(S);
-  FOTO=f;ALMACEN.guardar(S,cambios)}
+  let txt=null;const texto=()=>txt||(txt=JSON.stringify(S));   // una sola vez: con muchos datos pesa
+  if(cambios.some(c=>['crear','cambiar','borrar'].includes(c.op))){if(!modo&&ULTIMO){DESHACER={s:ULTIMO,at:Date.now()};if(typeof mostrarDeshacer==='function')mostrarDeshacer()}ULTIMO=texto()}
+  else if(!ULTIMO)ULTIMO=texto();
+  FOTO=f;ALMACEN.guardar(S,cambios,ALMACEN===ALMACEN_NAVEGADOR?texto():undefined)}
 let DESHACER=null,ULTIMO=null;
 function savePrefs(){ALMACEN.guardarPrefs(PREFS)}
 function commit(modo){save(modo);renderAll()}
@@ -2091,7 +2134,7 @@ function docSt(r){const tot=docTotal(r),pg=+r.pagado||0,nc=ncTotalDe(r);
   if(tot>0&&pg+nc>=tot)return{label:r.tipo==='Venta'?'Cobrada':'Pagada',tone:'done'};
   if(r.vence&&r.vence<TODAY)return{label:'Vencida',tone:'stuck'};
   if(pg>0)return{label:'Parcial',tone:'prog'};return{label:'Pendiente',tone:'todo'}}
-const stockOf=p=>S.d.moves.filter(m=>m.producto===p.id).reduce((a,m)=>a+(m.tipo==='Salida'?-1:m.tipo==='Traspaso'?0:1)*(+m.cantidad||0),+p.stock0||0);   // un traspaso entre bodegas no cambia el total
+const stockOf=p=>(indice('stock',S.d.moves,ms=>{const t=new Map();ms.forEach(m=>t.set(m.producto,(t.get(m.producto)||0)+(m.tipo==='Salida'?-1:m.tipo==='Traspaso'?0:1)*(+m.cantidad||0)));return t}).get(p.id)||0)+(+p.stock0||0);   // un traspaso entre bodegas no cambia el total
 function prodSt(p){const s=stockOf(p);if(s<=0)return{label:'Sin stock',tone:'stuck'};if(s<(+p.min||0))return{label:'Bajo mínimo',tone:'prog'};return{label:'OK',tone:'done'}}
 function vacSaldo(p){if(!p||!p.ingreso)return null;
   const used=S.d.leaves.filter(l=>l.persona===p.id&&l.tipo==='Vacaciones'&&l.estado==='Aprobada').reduce((a,l)=>a+workdays(l.desde,l.hasta),0);
@@ -3712,7 +3755,7 @@ function qrSVG(texto,px=4){
 const bodegaDe=(m,p)=>m.bodega||p?.bodega||'';
 function stockEn(p,b){
   let s=p.bodega===b?(+p.stock0||0):0;
-  S.d.moves.forEach(m=>{if(m.producto!==p.id)return;const q=+m.cantidad||0,o=bodegaDe(m,p);
+  (indice('movsProd',S.d.moves,ms=>agrupar(ms,m=>m.producto)).get(p.id)||[]).forEach(m=>{const q=+m.cantidad||0,o=bodegaDe(m,p);
     if(m.tipo==='Traspaso'){if(o===b)s-=q;if(m.destino===b)s+=q}
     else if(o===b)s+=m.tipo==='Salida'?-q:q});
   return s;
@@ -4299,7 +4342,7 @@ function costeoView(){
    N° de documento, y la foto de la boleta como adjunto (botón con la cámara del teléfono). Quien aprueba ve si falta
    la foto. Contabilidad → "Resumen de gastos": por categoría y mes, y por persona.
    La lectura automática de la boleta (monto, RUT, fecha) queda para la Fase D. */
-const tieneBoleta=id=>S.d.adjuntos.some(a=>a.ent==='rends'&&a.reg===id&&(/^image\//.test(a.tipo||'')||/pdf/.test(a.tipo||'')));
+const tieneBoleta=id=>indice('boletas',S.d.adjuntos,as=>new Set(as.filter(a=>a.ent==='rends'&&(/^image\//.test(a.tipo||'')||/pdf/.test(a.tipo||''))).map(a=>a.reg))).has(id);
 const GASTO_OK=['Aprobada','Reembolsada'];
 function gastosView(){
   const meses=[0,1,2].map(i=>{const d=P(TODAY);d.setDate(1);d.setMonth(d.getMonth()-i);return toISO(d).slice(0,7)}).reverse();
@@ -4398,14 +4441,14 @@ function viewRendir(){
   const subnavG=subs?`<div class="gsub" role="tablist">${subs.map(([k,n])=>`<button type="button" class="${k===sub?'on':''}" data-gsub="${tab}:${k}" aria-pressed="${k===sub}">${n}</button>`).join('')}</div>`:'';
   const fila=r=>`<tr data-rec="rends:${r.id}:contabilidad" tabindex="0"><td class="nw">${fmt(r.fecha)}</td><td class="nm">${esc(gastoNombre(r))}${dupTag(r)}<span class="hint">${esc([r.categoria,r.tipoDoc&&r.numDoc?`${r.tipoDoc} ${r.numDoc}`:r.tipoDoc].filter(Boolean).join(' · '))}${r.proyecto?` · ${esc(refName('projects',r.proyecto))}`:''}</span></td>
     <td class="r num nw">${fmtMoney(+r.monto||0,r.moneda||'CLP')}</td><td class="nw">${r.informe?esc(informeDe(r)?.num||''):'<span class="hint">—</span>'}</td><td>${tieneBoleta(r.id)?'<span class="hint">Con foto</span>':'<span class="late">Falta foto</span>'}</td><td>${tonePill(ENT.rends.status(r))}</td></tr>`;
-  const tablaG=(rs,vacio)=>rs.length?`<div class="tablewrap"><table class="rendir-t"><thead><tr><th>Fecha</th><th>Proveedor</th><th class="r">Monto</th><th>Informe</th><th>Foto</th><th>Estado</th></tr></thead><tbody>${rs.map(fila).join('')}</tbody></table></div>`:empty(vacio);
+  const tablaG=(rs,vacio,k)=>{const c=`rendir|${S.ui.tabs?.rendir||''}|${S.ui.gsub||''}|${k||''}`;return rs.length?`<div class="tablewrap"><table class="rendir-t"><thead><tr><th>Fecha</th><th>Proveedor</th><th class="r">Monto</th><th>Informe</th><th>Foto</th><th>Estado</th></tr></thead><tbody>${filasVer(c,rs).map(fila).join('')}</tbody></table></div>${masFilas(c,rs.length)}`:empty(vacio)};
   const btn=(attr,ico,txt,cls='ghost')=>`<button class="btn ${cls}" ${attr}>${ico?I(ico):''}${txt}</button>`;
   let cuerpo='';
   if(tab==='gastado'){
     // Borrador = pendiente y sin informe; los sueltos ya revisados van aparte, al pie
     const borr=mias.filter(r=>!r.informe&&r.estado==='Pendiente'),enInf=mias.filter(r=>r.informe),sueltos=mias.filter(r=>!r.informe&&r.estado!=='Pendiente');
     cuerpo=`<section class="box"><div class="toolbar"><h2>${sub==='borrador'?'Gastos en borrador':'Gastos en informes'} <span class="hint">${(sub==='borrador'?borr:enInf).length}</span></h2>${rinde&&canCreate('rends','contabilidad')?btn('data-newrec="rends"',ICON.receipt,'Rendir un gasto','rendir-btn'):''}</div>${subnavG}
-      ${sub==='borrador'?`<p class="hint">Gastos que aún no están en un informe. Mételos en uno desde la pestaña Informes.</p>${tablaG(borr,'No tienes gastos en borrador. Toma la foto de una boleta para rendir uno.')}${sueltos.length?`<h3>Gastos sin informe ya revisados <span class="hint">${sueltos.length}</span></h3>${tablaG(sueltos,'')}`:''}`
+      ${sub==='borrador'?`<p class="hint">Gastos que aún no están en un informe. Mételos en uno desde la pestaña Informes.</p>${tablaG(borr,'No tienes gastos en borrador. Toma la foto de una boleta para rendir uno.')}${sueltos.length?`<h3>Gastos sin informe ya revisados <span class="hint">${sueltos.length}</span></h3>${tablaG(sueltos,'','sueltos')}`:''}`
         :tablaG(enInf,'Aún no tienes gastos dentro de un informe.')}</section>`;
   }else if(tab==='informes'){
     const sel=misI.find(i=>i.id===S.ui.ginf)||null;
@@ -4505,25 +4548,46 @@ const informeDe=r=>r&&r.informe?S.d.informes.find(x=>x.id===r.informe):null;
 // El dueño corrige los gastos de un informe en borrador, o rechazado (para sacarlos y rendirlos en otro)
 const informeAbierto=r=>!r.informe||['Borrador','Rechazado'].includes(informeDe(r)?.estado);
 const gastoNombre=r=>r.comercio||r.motivo||r.categoria||'Gasto';
-const gastosDe=inf=>S.d.rends.filter(x=>x.informe===inf.id);
+const gastosDe=inf=>(indice('gastosInf',S.d.rends,rs=>agrupar(rs,x=>x.informe)).get(inf.id)||[]).slice();
 /* Gastos parecidos (pedido de Miguel, 23-10-2026): para no rendir dos veces la misma boleta. Puntaje de 0 a 100:
    mismo RUT y N° de documento = 100; si no, suma monto (igual 40, ±2 % 30, ±5 % 15), fecha (igual 25, ±2 días 15),
    proveedor (mismo RUT o nombre 25, uno contiene al otro 15) y N° de documento (10). Desde 60 se avisa.
    Solo compara con gastos que quien mira puede ver; los rechazados no cuentan. */
 const normTxt=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,'');
+// Datos de un gasto ya normalizados para comparar (se guardan mientras dure el índice de gastos)
+function gastoNorm(x){
+  const c=indice('gastoNorm',S.d.rends,()=>new Map()),v=c.get(x);if(v&&v.obj===x)return v;
+  const n={obj:x,rut:x.rutComercio?rutN(x.rutComercio):'',doc:x.numDoc?normTxt(x.numDoc):'',m:enCLP(x.monto,x.moneda,x.fecha),d:x.fecha?diaN(x.fecha):null,prov:normTxt(x.comercio||x.motivo)};
+  if(indice('posGasto',S.d.rends,rs=>new Map(rs.map((y,i)=>[y,i]))).has(x))c.set(x,n);return n}
 function parecido(a,b){
   if(a===b||(a.id&&a.id===b.id))return 0;
-  const rut=!!(a.rutComercio&&b.rutComercio&&rutN(a.rutComercio)===rutN(b.rutComercio)),doc=!!(a.numDoc&&b.numDoc&&normTxt(a.numDoc)===normTxt(b.numDoc));
+  const A=gastoNorm(a),B=gastoNorm(b);
+  const rut=!!(a.rutComercio&&b.rutComercio&&A.rut===B.rut),doc=!!(a.numDoc&&b.numDoc&&A.doc===B.doc);
   if(rut&&doc)return 100;
-  let p=0;const ma=enCLP(a.monto,a.moneda,a.fecha),mb=enCLP(b.monto,b.moneda,b.fecha);
+  let p=0;const ma=A.m,mb=B.m;
   if(ma&&mb){const d=Math.abs(ma-mb)/Math.max(ma,mb);p+=d===0?40:d<=.02?30:d<=.05?15:0}
-  if(a.fecha&&b.fecha){const dd=Math.abs(diff(a.fecha,b.fecha));p+=dd===0?25:dd<=2?15:0}
-  const ca=normTxt(a.comercio||a.motivo),cb=normTxt(b.comercio||b.motivo);
+  if(a.fecha&&b.fecha){const dd=Math.abs(Math.round(B.d-A.d));p+=dd===0?25:dd<=2?15:0}
+  const ca=A.prov,cb=B.prov;
   if(rut||(ca&&ca===cb))p+=25;else if(ca.length>3&&cb.length>3&&(ca.includes(cb)||cb.includes(ca)))p+=15;
   if(doc)p+=10;
   return Math.min(99,p);
 }
-const similares=r=>S.d.rends.filter(x=>x!==r&&x.id!==r.id&&x.estado!=='Rechazada'&&canSee('rends',x,'contabilidad')).map(x=>({r:x,p:parecido(r,x)})).filter(x=>x.p>=60).sort((a,b)=>b.p-a.p);
+/* Para no comparar cada gasto con todos (con miles de gastos tardaba segundos), se compara solo con los candidatos que
+   pueden llegar a 60: sin fecha a ±2 días, el puntaje máximo es monto 40 + proveedor 25 + N° 10, y eso exige el mismo
+   RUT, el mismo proveedor o el mismo N° de documento (o un proveedor que contiene al otro, que suma 15 y necesita el N°).
+   Así el resultado es el mismo que comparando con todos. */
+const claveProv=x=>normTxt(x.comercio||x.motivo);
+function candidatosGasto(r){
+  const ix=indice('gastosSim',S.d.rends,rs=>({fecha:agrupar(rs,x=>x.fecha),rut:agrupar(rs,x=>x.rutComercio?rutN(x.rutComercio):''),prov:agrupar(rs,claveProv),doc:agrupar(rs,x=>x.numDoc?normTxt(x.numDoc):'')}));
+  const c=new Set();const suma=l=>{if(l)l.forEach(x=>c.add(x))};
+  if(r.fecha&&isDate(r.fecha))for(let d=-2;d<=2;d++)suma(ix.fecha.get(addD(r.fecha,d)));
+  if(r.rutComercio)suma(ix.rut.get(rutN(r.rutComercio)));
+  suma(ix.prov.get(claveProv(r)));
+  if(r.numDoc)suma(ix.doc.get(normTxt(r.numDoc)));
+  return [...c];
+}
+const similares=r=>candidatosGasto(r).filter(x=>x!==r&&x.id!==r.id&&x.estado!=='Rechazada'&&canSee('rends',x,'contabilidad')).map(x=>({r:x,p:parecido(r,x)})).filter(x=>x.p>=60).sort((a,b)=>b.p-a.p||posGasto(a.r)-posGasto(b.r));
+const posGasto=x=>indice('posGasto',S.d.rends,rs=>new Map(rs.map((y,i)=>[y,i]))).get(x)??0;   // empates en el orden de siempre
 const dupTag=r=>{const s=similares(r);return s.length?`<span class="duptag" title="${esc(`Se parece ${s[0].p}% a ${gastoNombre(s[0].r)} del ${fmt(s[0].r.fecha)}`)}">Posible duplicado ${s[0].p}%</span>`:''};
 const dupInforme=inf=>{const n=gastosDe(inf).filter(x=>similares(x).length).length;return n?`<span class="duptag">${cuenta(n,'gasto parecido a otro','gastos parecidos a otros')}</span>`:''};
 function dupAviso(r){
@@ -5946,13 +6010,21 @@ function fugas(){
   S.d.ocs.filter(o=>o.estado==='Recibida'&&o.f_recep&&diff(o.f_recep,TODAY)>FUGA_DIAS&&!ligadas.has(o.id)).forEach(o=>{
     const n=ocNetoCLP(o,o.f_recep);if(compras.some(d=>d.contraparte===o.proveedor&&n!=null&&Math.abs(facCLP(d)-n)<=Math.max(1,n*CRUCE_TOL)))return;
     add('oc',`${o.num} · ${refName('contacts',o.proveedor)}`,`Recibida el ${fmt(o.f_recep)} (hace ${diff(o.f_recep,TODAY)} días) y sin factura`,n||0,`ocs:${o.id}:compras`)});
-  compras.forEach((d,i)=>compras.slice(i+1).forEach(e=>{if(d.contraparte!==e.contraparte)return;
+  // Pares candidatos (mismo proveedor y N°, o mismo proveedor y neto) por grupos, en el orden de siempre: comparar
+  // todas con todas tardaba segundos con miles de facturas
+  // dias: solo los pares con menos de esos días entre una fecha y otra (el grupo se ordena por fecha y se recorre en ventana)
+  const pares=(arr,clave,fecha,dias)=>{const ps=new Set();agrupar(arr.map((x,i)=>[x,i]),([x])=>clave(x)).forEach(g=>{
+    if(fecha){g=g.map(([x,i])=>[x,i,diaN(fecha(x))]).sort((a,b)=>a[2]-b[2])}
+    for(let a=0;a<g.length;a++)for(let b=a+1;b<g.length;b++){if(fecha&&g[b][2]-g[a][2]>=dias)break;const i=Math.min(g[a][1],g[b][1]),j=Math.max(g[a][1],g[b][1]);ps.add(i*1e6+j)}});return ps};
+  const pc=new Set([...pares(compras,d=>d.numero?d.contraparte+'|'+norm(d.numero):''),...pares(compras,d=>(+d.neto||0)>0?d.contraparte+'|'+(+d.neto):'',d=>d.emision||TODAY,7)]);
+  [...pc].sort((a,b)=>a-b).map(k=>[compras[Math.floor(k/1e6)],compras[k%1e6]]).forEach(([d,e])=>{
     const mismoN=d.numero&&norm(d.numero)===norm(e.numero),cerca=(+d.neto||0)>0&&+d.neto===+e.neto&&Math.abs(diff(d.emision||TODAY,e.emision||TODAY))<7;
-    if(mismoN||cerca)add('dup',`Facturas ${d.numero} y ${e.numero} · ${refName('contacts',d.contraparte)}`,mismoN?'Mismo proveedor y mismo N°':`Mismo proveedor y neto, emitidas con ${Math.abs(diff(d.emision||TODAY,e.emision||TODAY))} días de diferencia`,docTotal(e),`docs:${e.id}:contabilidad`)}));
+    if(mismoN||cerca)add('dup',`Facturas ${d.numero} y ${e.numero} · ${refName('contacts',d.contraparte)}`,mismoN?'Mismo proveedor y mismo N°':`Mismo proveedor y neto, emitidas con ${Math.abs(diff(d.emision||TODAY,e.emision||TODAY))} días de diferencia`,docTotal(e),`docs:${e.id}:contabilidad`)});
   S.d.docs.forEach(d=>{const t=docTotal(d),p=+d.pagado||0;if(p>t+1)add('sobre',`${d.tipo==='Compra'?'Factura proveedor':'Factura'} ${d.numero} · ${refName('contacts',d.contraparte)}`,`Pagado ${fmtMoney(p)} de un total de ${fmtMoney(t)}`,p-t,`docs:${d.id}:contabilidad`)});
-  S.d.rends.filter(r=>r.estado!=='Rechazada').forEach((r,i,a)=>a.slice(i+1).forEach(s=>{if(s.persona===r.persona&&+s.monto===+r.monto&&s.fecha===r.fecha&&+r.monto>0)
-    add('rend',`${refName('people',r.persona)} · ${fmtMoney(r.monto,r.moneda||'CLP')} el ${fmt(r.fecha)}`,`«${r.motivo}» y «${s.motivo}»`,s.monto,`rends:${s.id}:contabilidad`)}));
-  S.d.products.forEach(p=>{const st=stockOf(p);if(st<=0)return;const ult=S.d.moves.filter(m=>m.producto===p.id).map(m=>m.fecha).sort().pop();
+  const rv=S.d.rends.filter(r=>r.estado!=='Rechazada');
+  [...pares(rv,r=>+r.monto>0?r.persona+'|'+(+r.monto)+'|'+r.fecha:'')].sort((a,b)=>a-b).map(k=>[rv[Math.floor(k/1e6)],rv[k%1e6]]).forEach(([r,s])=>{
+    add('rend',`${refName('people',r.persona)} · ${fmtMoney(r.monto,r.moneda||'CLP')} el ${fmt(r.fecha)}`,`«${r.motivo}» y «${s.motivo}»`,s.monto,`rends:${s.id}:contabilidad`)});
+  S.d.products.forEach(p=>{const st=stockOf(p);if(st<=0)return;const ult=(indice('movsProd',S.d.moves,ms=>agrupar(ms,m=>m.producto)).get(p.id)||[]).map(m=>m.fecha).sort().pop();
     if(ult&&diff(ult,TODAY)<=INMOV_DIAS)return;add('stock',`${p.codigo?p.codigo+' · ':''}${p.nombre}`,`${st} ${p.unidad||'un'} ${ult?`sin movimiento desde el ${fmt(ult)}`:'sin ningún movimiento registrado'}`,st*(+p.costo||0),`products:${p.id}:logistica`)});
   S.d.activos.filter(a=>a.estado==='Operativo'&&!a.proyecto&&a.compra&&diff(a.compra,TODAY)>INMOV_DIAS).forEach(a=>
     add('activo',`${a.codigo?a.codigo+' · ':''}${a.nombre}`,`Operativo y sin proyecto asignado${a.responsable?` · a cargo de ${refName('people',a.responsable)}`:''}`,+a.valor||0,`activos:${a.id}:activos`));
@@ -5980,7 +6052,10 @@ function fugasView(){
    - "Crear OC" arma una OC en borrador por proveedor con todos sus productos; "Pedir cotizaciones" arma un cuadro
      comparativo con hasta 3 proveedores. Ambos quedan para revisar y siguen su flujo normal. */
 const lineaDe=(p,l)=>{const t=norm(l.d||'');return !!t&&((p.codigo&&t.includes(norm(p.codigo)))||t.includes(norm(p.nombre)))};
-function enCamino(p){return S.d.ocs.filter(o=>['Aprobada','Enviada'].includes(o.estado)).reduce((a,o)=>a+(o.lineas||[]).filter(l=>lineaDe(p,l)).reduce((b,l)=>b+(+l.q||0),0),0)}
+function enCamino(p){
+  const ls=indice('lineasAbiertas',S.d.ocs,ocs=>ocs.filter(o=>['Aprobada','Enviada'].includes(o.estado)).flatMap(o=>(o.lineas||[]).map(l=>({t:norm(l.d||''),q:+l.q||0}))).filter(l=>l.t));
+  const c=p.codigo?norm(p.codigo):'',n=norm(p.nombre);   // igual que lineaDe, con el texto de cada línea normalizado una vez
+  return ls.reduce((a,l)=>a+((c&&l.t.includes(c))||l.t.includes(n)?l.q:0),0)}
 function comprometido(p){return S.projects.filter(x=>x.status==='activo').reduce((a,x)=>a+(x.materiales||[]).filter(m=>m.producto===p.id).reduce((b,m)=>b+Math.max(0,(+m.cantidad||0)-entregado(x.id,p.id)),0),0)}
 function proveedoresDe(p){
   const ids=new Set(S.d.moves.filter(m=>m.producto===p.id&&m.tipo==='Entrada'&&m.proveedor).map(m=>m.proveedor));
@@ -7550,7 +7625,7 @@ async function srvCargar(cli,preferida){
   t.empresa=await cli.leer('empresa');
   const s=hilvantaDesdeFilas(t,e.empresa_id);
   s.me=e.persona_id;s.empresas=es;
-  return {s,E:e.empresa_id,me:e.persona_id};
+  return {s,t,E:e.empresa_id,me:e.persona_id};
 }
 /* ---------- Guardar ---------- */
 const srvSinNoToca=(tabla,f)=>{const o=Object.assign({},f);(SRV_NO_TOCA[tabla]||[]).forEach(k=>delete o[k]);delete o.empresa_id;delete o.id;return o};
@@ -7570,17 +7645,17 @@ async function srvSincronizar(cli,E,me,foto,s,cambios){
     if(c.col==='indicadores'){const a=antes(c.col,c.id);
       if(a)await cli.borrar('indicador',{empresa_id:E,fecha:a.fecha});
       if(c.op!=='borrar'){const f=F.indicador.find(r=>r.fecha===c.reg.fecha);if(f)await cli.insertar('indicador',[f])}continue}
-    if(c.op==='borrar'){await unaFila(cli.borrar(tabla,{id:c.id}));continue}
+    if(c.op==='borrar'){await unaFila(cli.borrar(tabla,{id:c.id}));srvQuitarFila(tabla,c.id);continue}
     const f=filaDe(tabla,c.id);if(!f)continue;
     if(tabla==='rol'&&c.op!=='crear'&&!isAdmin()){await unaFila(cli.actualizar('rol',{panel:f.panel},{id:c.id}));continue}   // Inicio del rol (persona.inicio_todos)
     if(tabla==='proyecto'&&f.cliente_id&&!(s.d.contacts||[]).some(x=>x.id===f.cliente_id)){   // cliente nuevo escrito a mano
       const ct=filaDe('contacto',f.cliente_id);if(ct){await cli.insertar('contacto',[ct]);s.d.contacts.push({id:ct.id,nombre:ct.nombre,tipo:'Cliente',pais:'Chile'})}}
     // Otra persona (que esta no ve) pudo anotar ya la misma ejecución de una automatización: no es un error
-    if(c.op==='crear'){try{await cli.insertar(tabla,[f])}catch(e){if(!(tabla==='automatizacion_ejecucion'&&/ejecucion_clave|duplicate|23505/.test(e.message)))throw e}}
-    else await unaFila(cli.actualizar(tabla,srvSinNoToca(tabla,f),{id:c.id}));
+    if(c.op==='crear'){try{await cli.insertar(tabla,[f]);srvPonerFila(tabla,srvJSON(tabla)(f))}catch(e){if(!(tabla==='automatizacion_ejecucion'&&/ejecucion_clave|duplicate|23505/.test(e.message)))throw e}}
+    else await srvActualizar(cli,tabla,c.id,srvSinNoToca(tabla,f),c.col,c.reg);   // revisa que nadie haya cambiado lo mismo (simultaneos.js)
     for(const [h,fk] of SRV_HIJOS[tabla]||[]){
-      if(c.op!=='crear')await cli.borrar(h,{[fk]:c.id});
-      const hs=(F[h]||[]).filter(r=>r[fk]===c.id);if(hs.length)await cli.insertar(h,hs)}
+      if(c.op!=='crear'){await cli.borrar(h,{[fk]:c.id});srvQuitarHijos(h,fk,c.id)}
+      const hs=(F[h]||[]).filter(r=>r[fk]===c.id);if(hs.length){await cli.insertar(h,hs);hs.forEach(r=>srvPonerFila(h,srvJSON(h)(r)))}}
     if(tabla==='tarea'){const viejos=new Set(((antes(c.col,c.id)||{}).comments||[]).map(x=>x.id)),nuevos=new Set((c.reg.comments||[]).map(x=>x.id));
       const ins=F.comentario_tarea.filter(r=>r.tarea_id===c.id&&r.id&&!viejos.has(r.id));if(ins.length)await cli.insertar('comentario_tarea',ins);
       for(const id of viejos)if(!nuevos.has(id))await cli.borrar('comentario_tarea',{id})}
@@ -7613,14 +7688,14 @@ const ALMACEN_SERVIDOR={
 function srvEstado(x){const b=$('sync');if(b){b.hidden=!x;b.textContent=x==='guardando'?'Guardando…':''}}
 async function srvRecargar(){
   const ui=S&&S.ui;const r=await srvCargar(SRV.cli,SRV.E);
-  S=r.s;S.ui=ui;normalize();marcarGuardado();SRV.foto=fotoDe(S);renderAll();
+  SRV.t=r.t;SRV.ix=null;S=r.s;S.ui=ui;normalize();marcarGuardado();SRV.foto=fotoDe(S);renderAll();
 }
 async function conectarServidor(cli){
   window.HILVANTA_CONECTADA=true;
   const r=await srvCargar(cli);
-  SRV={cli,E:r.E,me:r.me,foto:null,cola:Promise.resolve(),error:null};
+  SRV={cli,E:r.E,me:r.me,t:r.t,foto:null,cola:Promise.resolve(),error:null};
   S=r.s;normalize();marcarGuardado();SRV.foto=fotoDe(S);ALMACEN=ALMACEN_SERVIDOR;
-  revisarFechas();applyTheme(false);renderAll();
+  revisarFechas();applyTheme(false);renderAll();srvEscuchar();
   if(!S.d.indicadores.some(i=>i.fecha===TODAY))traerIndicadores(true);   // UF y dólar del día (24b), si falta y el rol puede
 }
 /* ---------- Cliente sobre supabase-js ---------- */
@@ -7634,6 +7709,7 @@ function clienteSupabase(sb){
   const filtrar=(q,f)=>{Object.entries(f).forEach(([k,v])=>{q=Array.isArray(v)?q.in(k,v):q.eq(k,v)});return q};
   return {
     async leer(t){let out=[],i=0;for(;;){const d=ok(await sb.from(t).select('*').range(i,i+999));out=out.concat(d);if(d.length<1000)return out;i+=1000}},
+    async leerUno(t,id){return (ok(await sb.from(t).select('*').eq('id',id).limit(1))||[])[0]||null},
     async insertar(t,filas){return ok(await sb.from(t).insert(filas.map(srvJSON(t))))},
     async actualizar(t,valores,f){return ok(await filtrar(sb.from(t).update(srvJSON(t)(valores)),f).select('*'))},
     async borrar(t,f){return ok(await filtrar(sb.from(t).delete(),f).select('*'))},
@@ -7674,7 +7750,7 @@ async function entrarConSesion(){
   catch(e){if(String(e.message)==='SIN_EMPRESA'){pantallaAcceso('Tu cuenta todavía no está ligada a ninguna empresa. Pide al administrador que escriba tu correo en tu ficha de Personas.');await SB.auth.signOut();return}
     pantallaAcceso('No se pudieron cargar los datos: '+srvError(e))}
 }
-async function cerrarSesion(){if(SB)await SB.auth.signOut();SRV=null;ALMACEN=ALMACEN_NAVEGADOR;window.HILVANTA_CONECTADA=false;pantallaAcceso()}
+async function cerrarSesion(){srvDejarDeEscuchar();if(SB)await SB.auth.signOut();SRV=null;ALMACEN=ALMACEN_NAVEGADOR;window.HILVANTA_CONECTADA=false;pantallaAcceso()}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-accmodo]');if(b)pantallaAcceso('',b.dataset.accmodo)});
 document.addEventListener('submit',async e=>{
   if(e.target.id!=='accForm')return;e.preventDefault();const modo=e.target.querySelector('[type=submit]').dataset.modo;
@@ -7874,10 +7950,10 @@ new MutationObserver(()=>{document.querySelectorAll('#modal img[data-adjimg]').f
    - Al cerrar sesión se borra la copia; si hay cambios sin enviar, se avisa y no se cierra. */
 const kCopia=e=>'hilvanta-copia:'+e,kPend=e=>'hilvanta-pend:'+e;
 const sinUi=s=>{const x=Object.assign({},s);delete x.ui;return x};
-const leerLS=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}};
+const leerLS=leerLocalJSON;   // localStorage o IndexedDB (almacen.js): asíncrono
 const esErrorRed=e=>/Failed to fetch|NetworkError|Load failed|network|ERR_INTERNET|fetch/i.test(String(e?.message||e));
-function guardarCopia(){if(!SRV)return;try{localStorage.setItem(kCopia(SRV.E),JSON.stringify({s:sinUi(S),me:SRV.me,at:new Date().toISOString()}));localStorage.setItem('hilvanta-ultima',SRV.E)}catch(e){}}
-function marcarPendiente(){if(!SRV)return;try{localStorage.setItem(kPend(SRV.E),JSON.stringify({s:sinUi(S),at:new Date().toISOString()}))}
+function guardarCopia(){if(!SRV)return;try{guardarLocal(kCopia(SRV.E),JSON.stringify({s:sinUi(S),me:SRV.me,at:new Date().toISOString()}));localStorage.setItem('hilvanta-ultima',SRV.E)}catch(e){}}
+function marcarPendiente(){if(!SRV)return;try{guardarLocal(kPend(SRV.E),JSON.stringify({s:sinUi(S),at:new Date().toISOString()}))}
   catch(e){toast('Este equipo no tiene espacio para guardar los cambios sin señal. No cierres la app hasta que vuelva la conexión.',8000)}}
 // Guardar: con señal, como siempre; sin señal (o si se corta a mitad), quedan pendientes en el equipo
 ALMACEN_SERVIDOR.guardar=function(s,cambios){
@@ -7892,24 +7968,24 @@ ALMACEN_SERVIDOR.guardar=function(s,cambios){
 };
 // Envía lo pendiente: la diferencia entre la última copia que llegó al servidor y lo que hay ahora en la app
 async function enviarPendiente(desdeArranque){
-  if(!SRV)return;const p=leerLS(kPend(SRV.E)),b=leerLS(kCopia(SRV.E));if(!p){SRV.offline=false;return}
+  if(!SRV)return;const p=await leerLS(kPend(SRV.E)),b=await leerLS(kCopia(SRV.E));if(!p){SRV.offline=false;return}
   const actual=desdeArranque?p.s:S,desde=fotoDe(b?b.s:actual),cambios=cambiosEntre(desde,fotoDe(actual),actual);
   try{srvEstado('guardando');if(cambios.length)await srvSincronizar(SRV.cli,SRV.E,SRV.me,desde,JSON.parse(JSON.stringify(actual)),cambios);
-    localStorage.removeItem(kPend(SRV.E));SRV.offline=false;srvEstado('');await srvRecargar();guardarCopia();
+    borrarLocal(kPend(SRV.E));SRV.offline=false;srvEstado('');await srvRecargar();guardarCopia();
     toast(cambios.length?`Volvió la conexión: se envió lo que hiciste sin señal (${cuenta(cambios.filter(c=>c.col!=='auditoria').length,'cambio','cambios')}).`:'Volvió la conexión.',6000)}
   catch(e){srvEstado('');if(esErrorRed(e))return;
-    localStorage.removeItem(kPend(SRV.E));SRV.offline=false;toast(`Al volver la conexión, el servidor no aceptó algunos cambios hechos sin señal (${srvError(e)}). Se cargan los datos reales.`,9000);await srvRecargar();guardarCopia()}
+    borrarLocal(kPend(SRV.E));SRV.offline=false;toast(`Al volver la conexión, el servidor no aceptó algunos cambios hechos sin señal (${srvError(e)}). Se cargan los datos reales.`,9000);await srvRecargar();guardarCopia()}
 }
 window.addEventListener('online',()=>{if(SRV?.offline)enviarPendiente(false)});
 // Entrar: con señal, se cargan los datos y se envía lo que quedó pendiente de la vez anterior; sin señal, la copia
 const _entrarConSesion=entrarConSesion;
 entrarConSesion=async function(){
   try{await conectarServidor(clienteSupabase(SB));cerrarAcceso();
-    if(leerLS(kPend(SRV.E)))await enviarPendiente(true);else guardarCopia()}
-  catch(e){if(String(e.message)==='SIN_EMPRESA'||!esErrorRed(e)||!entrarSinSenal())return _entrarConSesion()}
+    if(await leerLS(kPend(SRV.E)))await enviarPendiente(true);else guardarCopia()}
+  catch(e){if(String(e.message)==='SIN_EMPRESA'||!esErrorRed(e)||!(await entrarSinSenal()))return _entrarConSesion()}
 };
-function entrarSinSenal(){
-  const E=localStorage.getItem('hilvanta-ultima'),b=E&&leerLS(kCopia(E));if(!b)return false;const p=leerLS(kPend(E));
+async function entrarSinSenal(){
+  let E=null;try{E=localStorage.getItem('hilvanta-ultima')}catch(e){}const b=E&&await leerLS(kCopia(E));if(!b)return false;const p=await leerLS(kPend(E));
   window.HILVANTA_CONECTADA=true;S=(p||b).s;normalize();S.me=b.me;marcarGuardado();
   SRV={cli:clienteSupabase(SB),E,me:b.me,foto:fotoDe(S),cola:Promise.resolve(),error:null,offline:true};ALMACEN=ALMACEN_SERVIDOR;
   applyTheme(false);renderAll();cerrarAcceso();
@@ -7918,10 +7994,132 @@ function entrarSinSenal(){
 }
 const _cerrarSesion=cerrarSesion;
 cerrarSesion=async function(){
-  if(SRV&&leerLS(kPend(SRV.E)))return toast('Hay cambios hechos sin señal que aún no llegan al servidor. Conéctate antes de cerrar sesión.',7000);
-  if(SRV){localStorage.removeItem(kCopia(SRV.E));localStorage.removeItem('hilvanta-ultima')}
+  if(SRV&&await leerLS(kPend(SRV.E)))return toast('Hay cambios hechos sin señal que aún no llegan al servidor. Conéctate antes de cerrar sesión.',7000);
+  if(SRV){borrarLocal(kCopia(SRV.E));localStorage.removeItem('hilvanta-ultima')}
   return _cerrarSesion();
 };
+/* ===== Cambios simultáneos en la versión conectada (04-11-2026) =====
+   Antes, si dos personas cambiaban la misma OC a la vez, ganaba la última en guardar y la otra perdía su cambio sin
+   enterarse. Ahora:
+   1. Al guardar un registro se envía solo lo que cambió esta persona (no la fila entera), comparado con la versión de la
+      base que tiene la app en memoria (SRV.t, las filas tal como llegaron de la base). Antes de escribir se lee la
+      versión actual: si otra persona cambió OTROS campos, los dos cambios quedan; si cambió los MISMOS campos con otro
+      valor, no se pisa nada: se avisa qué cambió y se cargan los datos actuales para que la persona vuelva a hacer su
+      cambio (srvActualizar).
+   2. Los cambios de los demás llegan en vivo (Supabase Realtime, postgres_changes; la base solo manda lo que cada uno
+      puede ver, con las mismas reglas por fila). Se aplican a SRV.t y la app se vuelve a armar desde ahí, sin volver a
+      bajar todo (srvEvento, srvReconstruir). Si la persona está escribiendo o tiene una ficha abierta, se espera a que
+      la cierre; si la ficha abierta es justo la que cambió, se le avisa.
+   Lo que escribe esta misma app vuelve como eco igual a lo que ya tiene en memoria, y no genera avisos. */
+const SRV_SIN_VIVO=['auditoria','correlativo'];   // no se escuchan: la auditoría la ve solo el administrador en Ajustes
+
+/* ---------- Filas de la base en memoria ---------- */
+function srvIx(tabla){
+  if(!SRV.t)return null;SRV.ix=SRV.ix||{};
+  if(!SRV.ix[tabla]){const m=new Map();(SRV.t[tabla]||[]).forEach((r,i)=>m.set(r.id,i));SRV.ix[tabla]=m}
+  return SRV.ix[tabla];
+}
+function srvFila(tabla,id){const ix=srvIx(tabla);if(!ix)return null;const i=ix.get(id);return i==null?null:SRV.t[tabla][i]}
+function srvPonerFila(tabla,fila){
+  if(!SRV||!SRV.t||!fila||fila.id==null)return;const l=SRV.t[tabla]||(SRV.t[tabla]=[]),ix=srvIx(tabla),i=ix.get(fila.id);
+  if(i==null){ix.set(fila.id,l.length);l.push(fila)}else l[i]=Object.assign({},l[i],fila);
+}
+function srvQuitarFila(tabla,id){
+  if(!SRV||!SRV.t||!SRV.t[tabla])return;const n=SRV.t[tabla].length;SRV.t[tabla]=SRV.t[tabla].filter(r=>r.id!==id);
+  if(SRV.t[tabla].length!==n&&SRV.ix)delete SRV.ix[tabla];
+}
+function srvQuitarHijos(tabla,fk,id){if(!SRV||!SRV.t||!SRV.t[tabla])return;SRV.t[tabla]=SRV.t[tabla].filter(r=>r[fk]!==id);if(SRV.ix)delete SRV.ix[tabla]}
+// ¿Trae algo nuevo? Un eco de lo que guardó esta app coincide con la fila en memoria (en los campos que tiene)
+function srvNovedad(tabla,id,nueva,borrada){
+  const ant=srvFila(tabla,id);if(borrada)return !!ant;if(!ant)return true;
+  return Object.keys(ant).some(k=>k!=='actualizado_en'&&k in nueva&&!srvIgual(ant[k],nueva[k]));
+}
+
+/* ---------- Comparar valores ---------- */
+// La app arma las filas como texto (jsonb en texto, fechas ISO) y la base las devuelve con su formato (jsonb como objeto,
+// claves en otro orden, fechas con zona horaria). Se comparan en una forma común.
+function srvCanon(v){
+  if(v===undefined||v===null||v==='')return 'null';
+  if(typeof v==='string'){
+    const t=v.trim();
+    if(/^[[{]/.test(t)){try{return srvCanon(JSON.parse(t))}catch(e){}}
+    if(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(t)){const ms=Date.parse(t);if(!isNaN(ms))return 't'+ms}
+    if(/^-?\d+(\.\d+)?$/.test(t))return 'n'+(+t);
+    return 's'+v;
+  }
+  if(typeof v==='number')return 'n'+v;
+  if(typeof v==='boolean')return 'b'+v;
+  if(Array.isArray(v))return '['+v.map(srvCanon).join(',')+']';
+  if(typeof v==='object')return '{'+Object.keys(v).filter(k=>v[k]!==undefined).sort().map(k=>JSON.stringify(k)+':'+srvCanon(v[k])).join(',')+'}';
+  return String(v);
+}
+const srvIgual=(a,b)=>srvCanon(a)===srvCanon(b);
+const srvColNombre=k=>k.replace(/_id$/,'').replace(/_/g,' ');
+
+/* ---------- Guardar un cambio sin pisar el de otra persona ---------- */
+async function srvActualizar(cli,tabla,id,v,col,reg){
+  const sinFila=n=>{if(Array.isArray(n)&&!n.length)throw new Error('no permitido: la base no aplicó el cambio');return n};
+  const base=srvFila(tabla,id);
+  if(!base||!cli.leerUno){const n=sinFila(await cli.actualizar(tabla,v,{id}));srvPonerFila(tabla,n[0]);return}
+  const cambia=Object.keys(v).filter(k=>k!=='actualizado_en'&&!srvIgual(v[k],base[k]));
+  if(!cambia.length)return;   // el registro quedó igual en la base (el cambio era de sus líneas, que van aparte)
+  const ahora=await cli.leerUno(tabla,id);
+  if(ahora){
+    const otros=Object.keys(ahora).filter(k=>k!=='actualizado_en'&&!srvIgual(ahora[k],base[k]));
+    const choque=cambia.filter(k=>otros.includes(k)&&!srvIgual(ahora[k],v[k]));
+    if(choque.length){
+      const nom=!reg?'este registro':col==='tasks'?`la tarea «${base.nombre||reg.name}»`:col==='projects'?`el proyecto «${base.nombre||reg.name}»`:(typeof audTitulo==='function'&&ENT[col])?audTitulo(col,reg):'este registro';
+      const e=new Error(`otra persona cambió ${choque.map(k=>'«'+srvColNombre(k)+'»').join(', ')} de ${nom} mientras lo editabas. Tu cambio en ${choque.length>1?'esos campos':'ese campo'} no se guardó para no borrar el suyo; revisa y vuelve a hacerlo`);
+      e.choque=true;srvPonerFila(tabla,ahora);throw e}
+  }
+  const patch={};cambia.forEach(k=>patch[k]=v[k]);
+  const n=sinFila(await cli.actualizar(tabla,patch,{id}));
+  srvPonerFila(tabla,n[0]||Object.assign({},ahora||base,srvJSON(tabla)(patch)));
+}
+
+/* ---------- Cambios de los demás, en vivo ---------- */
+function srvEscuchar(){
+  if(!SRV||typeof SB==='undefined'||!SB||!SB.channel||SRV.canal)return;
+  const tablas=[...HILVANTA_ORDEN_TABLAS.filter(t=>!SRV_SIN_VIVO.includes(t)&&t!=='empresa'),'empresa'];
+  const c=SB.channel('hilvanta-'+SRV.E);
+  tablas.forEach(t=>c.on('postgres_changes',{event:'*',schema:'public',table:t,filter:(t==='empresa'?'id':'empresa_id')+'=eq.'+SRV.E},p=>srvEvento(p)));
+  c.subscribe();SRV.canal=c;
+}
+function srvDejarDeEscuchar(){if(SRV&&SRV.canal){try{SB.removeChannel(SRV.canal)}catch(e){}SRV.canal=null}}
+let srvVivoT=null;
+function srvEvento(p){
+  if(!SRV||!SRV.t||SRV.offline)return;
+  const tabla=p.table,nueva=p.new&&Object.keys(p.new).length?p.new:null,id=(nueva||p.old||{}).id;if(id==null)return;
+  const nuevo=srvNovedad(tabla,id,nueva||{},p.eventType==='DELETE');
+  if(p.eventType==='DELETE')srvQuitarFila(tabla,id);else if(nueva)srvPonerFila(tabla,nueva);
+  if(!nuevo)return;   // es el eco de lo que guardó esta misma app
+  SRV.ajenos=SRV.ajenos||[];SRV.ajenos.push({tabla,id,op:p.eventType});
+  clearTimeout(srvVivoT);srvVivoT=setTimeout(srvAplicarAjenos,1200);   // varios cambios seguidos se aplican juntos
+}
+// ¿Está la persona en medio de algo? (escribiendo, con una ficha, una tarea o un menú abiertos)
+const srvOcupado=()=>!$('modalScrim').hidden||!$('drawer').hidden||!!document.activeElement?.matches('input,textarea,select');
+function srvAplicarAjenos(){
+  if(!SRV||!SRV.ajenos||!SRV.ajenos.length)return;
+  // Ficha abierta del mismo registro: se avisa una vez y se espera a que la cierre
+  const abierto=modalCtx&&modalCtx.id?modalCtx:null;
+  if(srvOcupado()){
+    if(abierto&&!SRV.avisoFicha&&SRV.ajenos.some(x=>x.id===abierto.id)){SRV.avisoFicha=true;toast('Otra persona acaba de cambiar este registro. Si guardas, solo se envía lo que tú cambiaste; si tocaron lo mismo, se te avisa.',7000)}
+    clearTimeout(srvVivoT);srvVivoT=setTimeout(srvAplicarAjenos,2500);return}
+  // Con cambios propios pendientes de enviar, primero se termina de guardar
+  SRV.cola.then(()=>{if(srvOcupado()){srvVivoT=setTimeout(srvAplicarAjenos,2500);return}
+    const n=SRV.ajenos.length;SRV.ajenos=[];SRV.avisoFicha=false;srvReconstruir();
+    $('vivo')?.remove();const v=document.createElement('div');v.id='vivo';v.className='vivo';v.setAttribute('role','status');
+    v.textContent=n===1?'Se actualizó un cambio de otra persona':`Se actualizaron ${n} cambios de otras personas`;document.body.appendChild(v);setTimeout(()=>v.remove(),4000);
+  }).catch(()=>{});
+}
+// Vuelve a armar los datos de la app con las filas de la base que hay en memoria (sin volver a bajarlas)
+function srvReconstruir(){
+  const ui=S&&S.ui,me=S&&S.me,es=S&&S.empresas;
+  const s=hilvantaDesdeFilas(SRV.t,SRV.E);s.me=me;s.empresas=es;
+  S=s;S.ui=ui;normalize();marcarGuardado();SRV.foto=fotoDe(S);
+  if(typeof guardarCopia==='function')guardarCopia();
+  renderAll();
+}
 
 /* ===== Piezas de interfaz ===== */
 const empty=t=>`<p class="empty">${t}</p>`;
@@ -7960,11 +8158,20 @@ function listVal(f,r){
     default:return esc(v);
   }
 }
+/* Tablas largas por partes (rendimiento, 04-11-2026): se dibujan las primeras TABLA_PAG filas y «Mostrar más» suma
+   otras tantas. Dibujar miles de filas de una vez dejaba la pantalla varios segundos en blanco. La búsqueda, los
+   filtros y los totales siguen mirando todas las filas. TABLA_VER guarda cuántas ve cada tabla mientras la app esté
+   abierta (no se guarda). */
+const TABLA_PAG=100,TABLA_VER={};
+function masFilas(clave,total){const n=TABLA_VER[clave]||TABLA_PAG;if(total<=n)return '';
+  return `<div class="tabla-mas"><span class="hint">Se muestran ${n.toLocaleString('es-CL')} de ${total.toLocaleString('es-CL')}. Usa la búsqueda o los filtros para encontrar uno.</span><button type="button" class="btn ghost sm" data-tablamas="${esc(clave)}">Mostrar ${Math.min(TABLA_PAG,total-n).toLocaleString('es-CL')} más</button></div>`}
+const filasVer=(clave,rows)=>rows.slice(0,TABLA_VER[clave]||TABLA_PAG);
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-tablamas]');if(!b)return;const k=b.dataset.tablamas;TABLA_VER[k]=(TABLA_VER[k]||TABLA_PAG)+TABLA_PAG;renderMain()});
 function recTable(ent,rows,emptyMsg,mod){
-  const E=ENT[ent],cols=fieldsOf(ent).filter(f=>f.list);
+  const E=ENT[ent],cols=fieldsOf(ent).filter(f=>f.list),clave=`${S.ui.route}|${S.ui.tabs?.[S.ui.route]||S.ui.view||''}|${ent}`,total=rows.length;rows=filasVer(clave,rows);
   return `<div class="tablewrap"><table class="rt"><thead><tr>${cols.map(f=>`<th class="${isNum(f)?'r':''}">${esc(f.label.replace(/ \(.*\)$/,''))}</th>`).join('')}${E.status?'<th>Estado</th>':''}</tr></thead><tbody>
   ${rows.map(r=>`<tr data-rec="${ent}:${r.id}:${mod||E.mod}" tabindex="0">${cols.map((f,i)=>`<td class="${isNum(f)?'r':''} ${i===0?'nm':''}">${listVal(f,r)}</td>`).join('')}${E.status?`<td>${tonePill(E.status(r))}</td>`:''}</tr>`).join('')
-  ||`<tr><td colspan="${cols.length+1}">${empty(emptyMsg||'No hay registros todavía.')}</td></tr>`}</tbody></table></div>`;
+  ||`<tr><td colspan="${cols.length+1}">${empty(emptyMsg||'No hay registros todavía.')}</td></tr>`}</tbody></table></div>${masFilas(clave,total)}`;
 }
 
 /* ===== Marco de la app: menú, barra superior y pantalla principal ===== */
@@ -8007,7 +8214,7 @@ function renderSide(){
   const tn=$('topnav');if(tn)tn.innerHTML=`<div class="brand">${LOGO_MARCA}<span class="logo">Hilvanta</span><span class="ver">${VERSION}</span></div>
     <button class="toppill ${r==='panel'?'on':''}" data-go="panel" title="Inicio" aria-label="Inicio">${I(ICON.home)}${badge(pendings().length)}</button>`;
   renderBotnav();
-  ajustarMenu();
+  ajustarMenuLuego();
 }
 // Barra inferior flotante del teléfono (diseño D): Hoy, Mis tareas, Proyectos, Buscar y Más (abre el menú completo)
 function renderBotnav(){
@@ -8024,6 +8231,10 @@ function ajustarMenu(){
   // 1: sin nombre de usuario ni flechas; 1,5: nombres sin íconos; 2: solo íconos
   for(const p of ['ajuste1','ajuste15','ajuste2']){if(!choca())break;if(p==='ajuste2')tb.classList.remove('ajuste15');tb.classList.add(p)}
 }
+// Se mide después de dibujar todo (medir antes obligaba al navegador a acomodar la página vieja completa: segundos con
+// tablas largas). Varias llamadas seguidas cuentan como una.
+let ajusteMenuPend=false;
+function ajustarMenuLuego(){if(ajusteMenuPend)return;ajusteMenuPend=true;requestAnimationFrame(()=>{ajusteMenuPend=false;ajustarMenu()})}
 addEventListener('resize',()=>ajustarMenu());
 document.fonts?.ready.then(()=>ajustarMenu());   // las tipografías cambian el ancho al terminar de cargar
 let MENU_USR=false;
@@ -8046,7 +8257,7 @@ function renderTop(){
       ${SRV?'<button type="button" role="menuitem" class="umitem salir" data-act="salir"><span>Cerrar sesión</span></button>':'<button type="button" role="menuitem" class="umitem" data-act="login"><span>Cambiar de usuario</span></button>'}
     </div>`;
   renderBell();
-  ajustarMenu();
+  ajustarMenuLuego();
 }
 // Título de la pantalla y ruta (área › pestaña)
 function cabecera(){
@@ -8055,7 +8266,7 @@ function cabecera(){
   if(MOD[r]&&MOD[r].tabs&&lvl(r)>=1){const tb=curTab();miga=`${MOD[r].name} › ${tb?.label||''}`}else if(r==='proyecto')miga='Proyectos';else if(r==='tablero')miga='Tableros';
   return {titulo:r==='proyecto'?(proj(S.ui.projectId)?.name||'Proyecto'):r==='tablero'?(tbActual()?.nombre||'Tablero'):titles[r]||MOD[r]?.name||'Inicio',miga};
 }
-function renderMain(){
+function renderMain(){memoLimpiar();
   let r=S.ui.route;
   if(MOD[r]&&r!=='proyectos'&&lvl(r)<1)r=S.ui.route='panel';
   if((r==='proyecto'||r==='proyectos')&&lvl('proyectos')<1)r=S.ui.route='panel';
@@ -10661,7 +10872,10 @@ document.addEventListener('keydown',e=>{
 $('menuBtn').innerHTML=I(ICON.menu);$('buscaBtn').innerHTML=I(ICON.search);$('asistBtn').innerHTML=I(ICON.ia);
 // Con servidor (window.HILVANTA_SERVIDOR, versión publicada en la web) se inicia sesión y se cargan los datos de Supabase
 if(window.HILVANTA_SERVIDOR&&window.supabase){S={v:2,projects:[],tasks:[],people:[],roles:[],d:{},ui:{}};iniciarServidor(window.HILVANTA_SERVIDOR)}
-else{S=load();normalize();marcarGuardado();revisarFechas();applyTheme(false);renderAll()}
+else{
+  const partir=()=>{S=load();normalize();marcarGuardado();revisarFechas();applyTheme(false);renderAll()};
+  if(!estaEnIDB(KEY))partir();
+  else leerLocal(KEY).then(t=>{if(t){const leer=ALMACEN_NAVEGADOR.leer;ALMACEN_NAVEGADOR.leer=()=>{try{return JSON.parse(t)}catch(e){return null}};partir();ALMACEN_NAVEGADOR.leer=leer}else partir()},partir)}
 
 </script>
 </body>
