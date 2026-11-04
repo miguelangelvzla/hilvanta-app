@@ -7619,13 +7619,15 @@ function srvError(e){const m=String(e&&e.message||e||'');
 async function srvCargar(cli,preferida){
   const es=await cli.rpc('hilvanta_mis_empresas');
   if(!es.length)throw new Error('SIN_EMPRESA');
-  const e=es.find(x=>x.empresa_id===preferida)||es[0],t={};
+  const e=es.find(x=>x.empresa_id===preferida)||es[0];let t={},borrados='',delta=null;
   const tablas=HILVANTA_ORDEN_TABLAS.filter(x=>x!=='correlativo');
-  await Promise.all(tablas.map(async x=>{t[x]=await cli.leer(x)}));
-  t.empresa=await cli.leer('empresa');
+  // Con una copia reciente en el equipo se traen solo los cambios (delta.js); si no, todo
+  delta=await filasDesdeCopia(cli,e.empresa_id,e.persona_id,tablas);
+  if(delta){t=delta.t;borrados=delta.borrados}
+  else{await Promise.all(tablas.map(async x=>{t[x]=await cli.leer(x)}));t.empresa=await cli.leer('empresa')}
   const s=hilvantaDesdeFilas(t,e.empresa_id);
   s.me=e.persona_id;s.empresas=es;
-  return {s,t,E:e.empresa_id,me:e.persona_id};
+  return {s,t,E:e.empresa_id,me:e.persona_id,borrados,delta:!!delta};
 }
 /* ---------- Guardar ---------- */
 const srvSinNoToca=(tabla,f)=>{const o=Object.assign({},f);(SRV_NO_TOCA[tabla]||[]).forEach(k=>delete o[k]);delete o.empresa_id;delete o.id;return o};
@@ -7688,12 +7690,12 @@ const ALMACEN_SERVIDOR={
 function srvEstado(x){const b=$('sync');if(b){b.hidden=!x;b.textContent=x==='guardando'?'Guardando…':''}}
 async function srvRecargar(){
   const ui=S&&S.ui;const r=await srvCargar(SRV.cli,SRV.E);
-  SRV.t=r.t;SRV.ix=null;S=r.s;S.ui=ui;normalize();marcarGuardado();SRV.foto=fotoDe(S);renderAll();
+  SRV.t=r.t;SRV.ix=null;SRV.borrados=r.borrados;guardarFilas();S=r.s;S.ui=ui;normalize();marcarGuardado();SRV.foto=fotoDe(S);renderAll();
 }
 async function conectarServidor(cli){
   window.HILVANTA_CONECTADA=true;
   const r=await srvCargar(cli);
-  SRV={cli,E:r.E,me:r.me,t:r.t,foto:null,cola:Promise.resolve(),error:null};
+  SRV={cli,E:r.E,me:r.me,t:r.t,borrados:r.borrados,delta:r.delta,foto:null,cola:Promise.resolve(),error:null};guardarFilas();
   S=r.s;normalize();marcarGuardado();SRV.foto=fotoDe(S);ALMACEN=ALMACEN_SERVIDOR;
   revisarFechas();applyTheme(false);renderAll();srvEscuchar();
   if(!S.d.indicadores.some(i=>i.fecha===TODAY))traerIndicadores(true);   // UF y dólar del día (24b), si falta y el rol puede
@@ -7709,6 +7711,8 @@ function clienteSupabase(sb){
   const filtrar=(q,f)=>{Object.entries(f).forEach(([k,v])=>{q=Array.isArray(v)?q.in(k,v):q.eq(k,v)});return q};
   return {
     async leer(t){let out=[],i=0;for(;;){const d=ok(await sb.from(t).select('*').range(i,i+999));out=out.concat(d);if(d.length<1000)return out;i+=1000}},
+    async leerDesde(t,desde,col='modificado_en'){let out=[],i=0;for(;;){let q=sb.from(t).select('*');if(desde)q=q.gt(col,desde);const d=ok(await q.order(col).range(i,i+999));out=out.concat(d);if(d.length<1000)return out;i+=1000}},
+    async contar(t){const {count,error}=await sb.from(t).select('id',{count:'exact',head:true});if(error)throw new Error(error.message);return count},
     async leerUno(t,id){return (ok(await sb.from(t).select('*').eq('id',id).limit(1))||[])[0]||null},
     async insertar(t,filas){return ok(await sb.from(t).insert(filas.map(srvJSON(t))))},
     async actualizar(t,valores,f){return ok(await filtrar(sb.from(t).update(srvJSON(t)(valores)),f).select('*'))},
@@ -7995,7 +7999,7 @@ async function entrarSinSenal(){
 const _cerrarSesion=cerrarSesion;
 cerrarSesion=async function(){
   if(SRV&&await leerLS(kPend(SRV.E)))return toast('Hay cambios hechos sin señal que aún no llegan al servidor. Conéctate antes de cerrar sesión.',7000);
-  if(SRV){borrarLocal(kCopia(SRV.E));localStorage.removeItem('hilvanta-ultima')}
+  if(SRV){borrarLocal(kCopia(SRV.E));borrarLocal(kFilas(SRV.E));localStorage.removeItem('hilvanta-ultima')}
   return _cerrarSesion();
 };
 /* ===== Cambios simultáneos en la versión conectada (04-11-2026) =====
@@ -8118,8 +8122,63 @@ function srvReconstruir(){
   const s=hilvantaDesdeFilas(SRV.t,SRV.E);s.me=me;s.empresas=es;
   S=s;S.ui=ui;normalize();marcarGuardado();SRV.foto=fotoDe(S);
   if(typeof guardarCopia==='function')guardarCopia();
-  renderAll();
+  guardarFilas();renderAll();
 }
+/* ===== Iniciar sesión sin bajar todo otra vez (04-11-2026) =====
+   Antes, cada vez que alguien entraba a la versión conectada, la app bajaba todas las filas de la empresa. Con un año
+   de datos son decenas de miles, y eso tarda. Ahora la app guarda en el equipo las filas de la base tal como llegaron
+   (SRV.t, en IndexedDB si no caben en localStorage: «hilvanta-filas:<empresa>») y, al volver a entrar, trae solo:
+   - las filas con modificado_en posterior a la última que tenía de esa tabla (menos 2 minutos de margen);
+   - los borrados anotados en fila_borrada desde entonces;
+   - completas, las tablas chicas sin id (áreas de la empresa, permisos del rol, indicadores, materiales y listas).
+   Después se cuenta cuántas filas hay en la base de cada tabla (una consulta chica por tabla): si no calza con la copia
+   (por ejemplo, una tarea que pasó a otra persona y ya no se ve), esa tabla se baja entera.
+   Se vuelve a bajar todo si la copia tiene más de 3 días, es de otra persona o de otra versión, cambió el rol o los
+   permisos de quien entra (podría ver filas que antes no veía), o la base todavía no tiene modificado_en. */
+const FILAS_V=1,FILAS_DIAS=3,FILAS_MARGEN=120000;
+const kFilas=e=>'hilvanta-filas:'+e;
+const FILAS_ENTERAS=['empresa','empresa_area','rol_permiso','indicador','proyecto_material','lista_personal'];
+// La marca más reciente de una tabla (las filas que llegaron de la base la traen; las que armó la app, no)
+const maxModif=l=>l.reduce((m,r)=>{const t=r&&r.modificado_en?Date.parse(r.modificado_en):0;return t>m?t:m},0);
+async function filasDesdeCopia(cli,E,me,tablas){
+  if(!cli.leerDesde)return null;
+  const c=await leerLocalJSON(kFilas(E));
+  if(!c||c.v!==FILAS_V||c.me!==me||!c.t||Date.now()-Date.parse(c.at)>FILAS_DIAS*864e5)return null;
+  const t=c.t,menos=ms=>ms?new Date(ms-FILAS_MARGEN).toISOString():null,traidas={};
+  const permDe=(tt,rol)=>srvCanon((tt.rol_permiso||[]).filter(r=>r.rol_id===rol).sort((a,b)=>String(a.area).localeCompare(String(b.area))));
+  const rolDe=(tt,id)=>{const r=(tt.rol||[]).find(x=>x.id===id);if(!r)return '';const o=Object.assign({},r);delete o.modificado_en;delete o.panel;return srvCanon(o)};   // el Inicio del rol no cambia lo que se ve
+  const yo0=Object.assign({},(t.persona||[]).find(p=>p.id===me)||{}),perm0=permDe(t,yo0.rol_id),rol0=rolDe(t,yo0.rol_id);
+  try{
+    await Promise.all(tablas.map(async x=>{
+      if(FILAS_ENTERAS.includes(x)||!t[x]){t[x]=await cli.leer(x);traidas[x]=t[x].length;return}
+      const nuevas=await cli.leerDesde(x,menos(maxModif(t[x])));traidas[x]=nuevas.length;
+      if(!nuevas.length)return;const ix=new Map(t[x].map((r,i)=>[r.id,i]));
+      nuevas.forEach(r=>{const i=ix.get(r.id);if(i==null){ix.set(r.id,t[x].length);t[x].push(r)}else t[x][i]=r});
+    }));
+    t.empresa=await cli.leer('empresa');
+    const borr=await cli.leerDesde('fila_borrada',c.borrados?menos(Date.parse(c.borrados)):null,'en');
+    const porTabla=agrupar(borr,b=>b.tabla);
+    porTabla.forEach((l,x)=>{if(!t[x])return;const ids=new Set(l.map(b=>b.fila_id));t[x]=t[x].filter(r=>!ids.has(r.id))});
+    // Si cambió algo de quién es o qué puede ver quien entra, lo que no veía antes no estaría en la copia
+    const yo=(t.persona||[]).find(p=>p.id===me);
+    const razon=!yo?'sin persona':yo.rol_id!==yo0.rol_id?'otro rol':srvCanon(yo.permisos)!==srvCanon(yo0.permisos)?'otros permisos propios':permDe(t,yo.rol_id)!==perm0?'otros permisos del rol':rolDe(t,yo.rol_id)!==rol0?'el rol cambió':'';
+    if(razon){filasDesdeCopia.razon=razon;return null}
+    // ¿Calza la cantidad de filas con la base? Si no, esa tabla se baja entera
+    if(cli.contar)await Promise.all(tablas.filter(x=>!FILAS_ENTERAS.includes(x)).map(async x=>{const n=await cli.contar(x);if(n!==t[x].length){t[x]=await cli.leer(x);traidas[x]=-1}}));
+    const ultBorr=borr.reduce((m,b)=>b.en>m?b.en:m,c.borrados||'');
+    return {t,borrados:ultBorr,traidas};
+  }catch(e){filasDesdeCopia.razon=e.message;return null}   // por ejemplo, la base aún no tiene modificado_en: se baja todo
+}
+// Guarda la copia de las filas (como mucho cada 20 s; con muchos datos pesa)
+let filasT=null;
+function guardarFilas(ya){
+  if(!SRV||!SRV.t)return;clearTimeout(filasT);
+  const hacer=()=>{try{const todas=Object.values(SRV.t).flat(),ms=maxModif(todas);
+    guardarLocal(kFilas(SRV.E),JSON.stringify({v:FILAS_V,me:SRV.me,at:new Date().toISOString(),borrados:SRV.borrados||(ms?new Date(ms).toISOString():''),
+      t:SRV.t}))}catch(e){}};
+  if(ya)hacer();else filasT=setTimeout(hacer,20000);
+}
+addEventListener('pagehide',()=>{if(filasT){clearTimeout(filasT);guardarFilas(true)}});
 
 /* ===== Piezas de interfaz ===== */
 const empty=t=>`<p class="empty">${t}</p>`;
