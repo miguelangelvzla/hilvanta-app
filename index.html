@@ -2101,7 +2101,7 @@ const isLate=t=>!!t.due&&t.due<TODAY&&t.status!=='done';
 const pcol=p=>PCOLORS[(+(p?.color)||0)%PCOLORS.length];
 const ini=n=>(n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
 const byDue=(a,b)=>{const x=a.due||'9999',y=b.due||'9999';return x<y?-1:x>y?1:0};
-const modOn=k=>S.mods[k]!==false;
+const modOn=k=>S.mods[k]!==false&&(typeof enPlan!=='function'||enPlan(k));   // y que el plan de la empresa la incluya (alta.js)
 function setStatus(t,v){
   if(t.status===v)return;t.status=v;
   t.doneAt=v==='done'?TODAY:'';
@@ -7617,6 +7617,7 @@ function srvError(e){const m=String(e&&e.message||e||'');
   return m.replace(/^.*?ERROR:\s*/,'')}
 /* ---------- Leer ---------- */
 async function srvCargar(cli,preferida){
+  try{await cli.rpc('hilvanta_ligarme')}catch(e){}   // liga la cuenta a fichas que la esperan con su correo (alta.js)
   const es=await cli.rpc('hilvanta_mis_empresas');
   if(!es.length)throw new Error('SIN_EMPRESA');
   const e=es.find(x=>x.empresa_id===preferida)||es[0];let t={},borrados='',delta=null;
@@ -7697,7 +7698,7 @@ async function conectarServidor(cli){
   const r=await srvCargar(cli);
   SRV={cli,E:r.E,me:r.me,t:r.t,borrados:r.borrados,delta:r.delta,foto:null,cola:Promise.resolve(),error:null};guardarFilas();
   S=r.s;normalize();marcarGuardado();SRV.foto=fotoDe(S);ALMACEN=ALMACEN_SERVIDOR;
-  revisarFechas();applyTheme(false);renderAll();srvEscuchar();
+  revisarFechas();applyTheme(false);renderAll();srvEscuchar();sembrarEmpresa();
   if(!S.d.indicadores.some(i=>i.fecha===TODAY))traerIndicadores(true);   // UF y dólar del día (24b), si falta y el rol puede
 }
 /* ---------- Cliente sobre supabase-js ---------- */
@@ -7744,14 +7745,16 @@ function cerrarAcceso(){const a=$('acceso');if(a)a.hidden=true}
 async function iniciarServidor(cfg){
   try{SB=window.supabase.createClient(cfg.url,cfg.anon,{auth:{persistSession:true,detectSessionInUrl:true}})}
   catch(e){document.body.innerHTML='<p style="padding:24px">No se pudo cargar la conexión con el servidor. Revisa tu internet y recarga la página.</p>';return}
+  const invitado=/type=invite/.test(location.hash);   // llegó con el enlace de una invitación (alta.js): elige su clave
   SB.auth.onAuthStateChange((ev)=>{if(ev==='PASSWORD_RECOVERY')pantallaAcceso('','nueva')});
   const {data}=await SB.auth.getSession();
   if(!data.session)return pantallaAcceso();
+  if(invitado)return pantallaAcceso('Te damos la bienvenida a Hilvanta. Elige tu clave para entrar las próximas veces.','nueva');
   await entrarConSesion();
 }
 async function entrarConSesion(){
   try{await conectarServidor(clienteSupabase(SB));cerrarAcceso()}
-  catch(e){if(String(e.message)==='SIN_EMPRESA'){pantallaAcceso('Tu cuenta todavía no está ligada a ninguna empresa. Pide al administrador que escriba tu correo en tu ficha de Personas.');await SB.auth.signOut();return}
+  catch(e){if(String(e.message)==='SIN_EMPRESA'){pantallaEmpresa();return}   // crear su empresa o esperar la invitación (alta.js)
     pantallaAcceso('No se pudieron cargar los datos: '+srvError(e))}
 }
 async function cerrarSesion(){srvDejarDeEscuchar();if(SB)await SB.auth.signOut();SRV=null;ALMACEN=ALMACEN_NAVEGADOR;window.HILVANTA_CONECTADA=false;pantallaAcceso()}
@@ -8179,6 +8182,87 @@ function guardarFilas(ya){
   if(ya)hacer();else filasT=setTimeout(hacer,20000);
 }
 addEventListener('pagehide',()=>{if(filasT){clearTimeout(filasT);guardarFilas(true)}});
+/* ===== Alta de empresas, invitaciones y planes (04-11-2026, versión conectada) =====
+   - Quien crea su cuenta y no está en ninguna empresa puede crear la suya (hilvanta_crear_empresa en la base): queda
+     como su administrador, con un plan de prueba de 30 días. Después la app le agrega los roles y centros de costo de
+     partida (sembrarEmpresa), ya con los permisos de administrador.
+   - Un administrador invita a cada persona desde Ajustes → Usuarios («Invitar»): la función hilvanta-invitar le manda
+     un correo con un enlace para entrar y elegir su clave. Al entrar, su cuenta queda ligada a su ficha por el correo.
+     Si alguien ya tenía cuenta, hilvanta_ligarme la liga al iniciar sesión.
+   - El plan (empresa.plan) dice qué áreas se pueden activar: prueba y completo, todas; esencial, sin comercio
+     exterior, activos ni acreditación. Lo cambia solo Hilvanta. Sin servidor no hay plan: todas las áreas.
+   El estado de cada persona (con cuenta, invitada) y el plan se leen de las filas de la base (SRV.t), no se guardan
+   en los datos de la app. */
+const PLANES={prueba:{nombre:'Prueba',areas:null},esencial:{nombre:'Esencial',areas:['proyectos','compras','logistica','contabilidad','rrhh','directorio']},completo:{nombre:'Completo',areas:null}};
+const empresaFila=()=>typeof SRV!=='undefined'&&SRV&&SRV.t&&SRV.t.empresa&&SRV.t.empresa.find(e=>e.id===SRV.E)||null;
+function enPlan(k){const e=empresaFila(),p=e&&PLANES[e.plan];return !p||!p.areas||p.areas.includes(k)}
+function planBloque(){
+  const e=empresaFila();if(!e)return '';const p=PLANES[e.plan]||{nombre:e.plan};
+  const dias=e.prueba_hasta?diff(TODAY,String(e.prueba_hasta).slice(0,10)):null;
+  const fuera=p.areas?MODORDER.filter(k=>!p.areas.includes(k)).map(k=>MOD[k].name):[];
+  return `<section class="box" id="plansec"><h2>Plan</h2><p><b>${esc(p.nombre)}</b>${e.plan==='prueba'&&dias!=null?` · ${dias>=0?`te ${dias===1?'queda 1 día':`quedan ${dias} días`} de prueba (hasta el ${fmt(String(e.prueba_hasta).slice(0,10))})`:'la prueba terminó'}`:''}</p>
+    ${fuera.length?`<p class="hint">No incluye: ${esc(fuera.join(', '))}.</p>`:'<p class="hint">Incluye todas las áreas.</p>'}<p class="hint">Para cambiar de plan escríbenos a contacto@hilvanta.cl.</p></section>`;
+}
+// Estado de la cuenta de una persona en la versión conectada
+function cuentaDe(p){
+  if(typeof SRV==='undefined'||!SRV||!SRV.t)return null;const f=srvFila('persona',p.id);if(!f)return null;
+  if(f.usuario_id&&!f.invitado_en)return {txt:'Con cuenta',ok:true};   // invitado: la cuenta existe desde la invitación; se puede reenviar hasta que entre
+  if(!p.email)return {txt:'Sin correo',sinCorreo:true};
+  return {txt:f.invitado_en?`Invitado el ${fmtAt(f.invitado_en)}`:'Sin invitar',invitar:true,reenviar:!!f.invitado_en};
+}
+function cuentaCelda(p){
+  const c=cuentaDe(p);if(!c)return p.pin?'Con PIN':'<span class="hint">Sin PIN</span>';
+  if(c.ok)return '<span class="pill ok">Con cuenta</span>';
+  if(c.sinCorreo)return '<span class="hint">Sin correo: escríbelo en su ficha para invitarla</span>';
+  return `<span class="hint">${esc(c.txt)}</span> <button type="button" class="btn ghost sm" data-invitar="${p.id}">${c.reenviar?'Reenviar invitación':'Invitar'}</button>`;
+}
+async function invitar(pid){
+  const p=person(pid);if(!p||!isAdmin())return;
+  const b=document.querySelector(`[data-invitar="${pid}"]`);if(b){b.disabled=true;b.textContent='Enviando…'}
+  try{const r=await fnServidor('hilvanta-invitar',{persona_id:pid,url:location.origin+location.pathname});
+    srvPonerFila('persona',{id:pid,invitado_en:new Date().toISOString()});
+    toast(`Le enviamos la invitación a ${r.para}.`,5000)}
+  catch(e){toast('No se envió la invitación: '+e.message,7000)}
+  renderMain();
+}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-invitar]');if(b){e.preventDefault();invitar(b.dataset.invitar)}});
+
+/* ---------- Empresa nueva ---------- */
+function pantallaEmpresa(msg){
+  let a=$('acceso');if(!a){document.body.insertAdjacentHTML('beforeend','<div id="acceso" class="acceso"></div>');a=$('acceso')}
+  a.hidden=false;
+  a.innerHTML=`<form class="accbox" id="empForm" novalidate><div class="brand">${LOGO_MARCA}<span class="logo">Hilvanta</span></div>
+    <h1>Crea tu empresa</h1>
+    <p class="hint">Tu cuenta todavía no está en ninguna empresa. Si tu empresa ya usa Hilvanta, pide a su administrador que te invite y entra con el enlace del correo. Si no, créala aquí: quedarás como su administrador, con 30 días de prueba.</p>
+    <label>Nombre de la empresa<input id="empNombre" autocomplete="organization" required></label>
+    <label>RUT de la empresa (opcional)<input id="empRut" placeholder="76.123.456-7"></label>
+    <label>Tu nombre<input id="empPersona" autocomplete="name"></label>
+    <p class="warn" id="empMsg" ${msg?'':'hidden'}>${esc(msg||'')}</p>
+    <button class="btn" type="submit">Crear la empresa</button>
+    <div class="acclinks"><button type="button" class="lnkbtn" data-act="salir">Salir</button></div></form>`;
+  setTimeout(()=>$('empNombre')?.focus(),20);
+}
+document.addEventListener('submit',async e=>{
+  if(e.target.id!=='empForm')return;e.preventDefault();
+  const nombre=$('empNombre').value.trim(),msg=t=>{const m=$('empMsg');m.textContent=t;m.hidden=false};
+  if(!nombre)return msg('Escribe el nombre de la empresa.');
+  const b=e.target.querySelector('[type=submit]');b.disabled=true;b.textContent='Creando…';
+  const {data,error}=await SB.rpc('hilvanta_crear_empresa',{nombre,rut:$('empRut').value.trim(),persona_nombre:$('empPersona').value.trim()});
+  if(error){b.disabled=false;b.textContent='Crear la empresa';return msg(error.message.replace(/^.*?ERROR:\s*/,''))}
+  try{sessionStorage.setItem('hilvanta-sembrar',data)}catch(x){}
+  await entrarConSesion();
+});
+// Lo de partida de una empresa recién creada: los roles de siempre y un centro de costo por área
+function sembrarEmpresa(){
+  let marca=null;try{marca=sessionStorage.getItem('hilvanta-sembrar')}catch(e){}
+  if(!SRV||marca!==SRV.E||!isAdmin())return;
+  try{sessionStorage.removeItem('hilvanta-sembrar')}catch(e){}
+  if(S.roles.length<=1)defaultRoles().filter(r=>!r.admin).forEach(r=>S.roles.push(Object.assign({},r,{id:uid()})));
+  if(!S.d.centros.length)AREAS_EMP.forEach(a=>S.d.centros.push({id:uid(),codigo:a.normalize('NFD').replace(/[̀-ͯ]/g,'').slice(0,3).toUpperCase(),nombre:a,area:a,responsable:S.me,activo:'Sí'}));
+  if(!S.custom||!Object.keys(S.custom).length)S.custom=defaultCustom();
+  addLog(`Se creó la empresa ${S.company}`);commit();
+  toast('Tu empresa está lista. Agrega a tu equipo en Personas y envíales la invitación desde Ajustes → Usuarios.',8000);
+}
 
 /* ===== Piezas de interfaz ===== */
 const empty=t=>`<p class="empty">${t}</p>`;
@@ -9031,11 +9115,12 @@ ${miResumenBloque()}
     <div class="rchips">${rolChips(r,areas)}</div><button class="btn ghost sm" data-roledit="${r.id}">Editar</button></div>`).join('');
   const userRows=S.people.map(p=>`<tr><td class="nm"><span class="who">${av(p.id)}<span>${esc(p.name)}<br><span class="hint">${esc(p.role||'')} · ${esc(p.area||'')}</span></span></span></td>
     <td><select data-userrole="${p.id}" aria-label="Rol de ${esc(p.name)}"><option value="">Sin rol (sin acceso)</option>${opts(S.roles,p.roleId)}</select></td>
-    <td>${permisosTxt(p)}</td><td>${p.pin?'Con PIN':'<span class="hint">Sin PIN</span>'}</td><td class="nw"><button class="btn ghost sm" data-permpers="${p.id}">Permisos</button> <button class="btn ghost sm" data-setpin="${p.id}">${p.pin?'Cambiar PIN':'Asignar PIN'}</button></td>
+    <td>${permisosTxt(p)}</td><td>${cuentaCelda(p)}</td><td class="nw"><button class="btn ghost sm" data-permpers="${p.id}">Permisos</button> <button class="btn ghost sm" data-setpin="${p.id}">${p.pin?'Cambiar PIN':'Asignar PIN'}</button></td>
     <td>${p.estado==='Inactivo'?'<span class="hint">Inactivo</span>':''}</td></tr>`).join('');
   const ce=CFENTS.includes(S.ui.cfEnt)?S.ui.cfEnt:'ocs';const cfs=(S.custom[ce]||[]);
   return `<section class="box"><h2>Empresa</h2><label>Nombre de la empresa<input id="company" value="${esc(S.company||'')}"></label></section>
   ${empresaExtra()}
+  ${planBloque()}
   <section class="box"><h2>Usuarios</h2><p class="hint">Cada colaborador es un usuario. Su rol define qué áreas ve y qué puede hacer; con «Permisos» le das a una persona un nivel distinto en alguna área sin cambiar su rol. Para agregar personas usa el área Personas.</p>
     <div class="tablewrap"><table class="rt perm"><thead><tr><th>Usuario</th><th>Rol</th><th>Permisos</th><th>Acceso</th><th></th><th></th></tr></thead><tbody>${userRows}</tbody></table></div></section>
   <section class="box"><h2>Roles y permisos</h2><p class="hint">Cada rol en una línea, con lo que puede hacer. «Editar» abre el detalle por área.</p>
@@ -9057,7 +9142,7 @@ ${miResumenBloque()}
   ${audSection()}
   ${erroresSection()}
   <section class="box"><h2>Áreas activas</h2><p class="hint">Cada empresa activa solo las áreas que usa. Si desactivas una, sus datos se conservan.</p>
-    <div class="modlist">${MODORDER.map(k=>`<label class="subl"><input type="checkbox" data-modtoggle="${k}" ${modOn(k)?'checked':''}>${MOD[k].name}</label>`).join('')}</div></section>
+    <div class="modlist">${MODORDER.map(k=>enPlan(k)?`<label class="subl"><input type="checkbox" data-modtoggle="${k}" ${modOn(k)?'checked':''}>${MOD[k].name}</label>`:`<label class="subl" title="No incluida en tu plan"><input type="checkbox" disabled>${MOD[k].name} <span class="hint">(no incluida en tu plan)</span></label>`).join('')}</div></section>
   ${mine}
   <section class="box"><h2>Respaldo</h2><p class="hint">Por ahora los datos se guardan solo en este navegador. Copia el respaldo de vez en cuando y pégalo en un archivo de texto. Cuando conectemos la base de datos, esto será automático.</p>
     <textarea id="bk" readonly rows="3" aria-label="Respaldo">${esc(JSON.stringify(S))}</textarea><div class="bar-actions"><button class="btn" data-act="copyBk">Copiar respaldo</button></div>
