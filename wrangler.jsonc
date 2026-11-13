@@ -1,0 +1,15 @@
+{
+  "name": "hilvanta-app",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "app.hilvantasuite.com",
+      "custom_domain": true
+    }
+  ],
+  "assets": {
+    "directory": ".",
+    "not_found_handling": "single-page-application"
+  }
+}

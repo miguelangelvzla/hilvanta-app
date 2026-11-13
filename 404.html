@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-fnK8LMhTRElfwlsituPAor8l8N9aD7HRIsOnA/m9W74='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://jdcvdrorlddydiikmhlf.supabase.co; media-src 'self' blob:; connect-src 'self' https://jdcvdrorlddydiikmhlf.supabase.co wss://jdcvdrorlddydiikmhlf.supabase.co https://mindicador.cl https://api.open-meteo.com https://geocoding-api.open-meteo.com https://cdn.jsdelivr.net; worker-src 'self'; manifest-src 'self'; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hilvanta</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/app.7dbe8b2cab.css">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0B2E4F">
+<link rel="icon" href="/icono.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icono-192.png">
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <button id="menuBtn" data-act="menu" aria-label="Abrir menú"></button>
+    <span class="logo movil" aria-hidden="true">Hilvanta</span>
+    <div class="topnav" id="topnav"></div>
+    <div class="tools">
+      <span class="conexion" id="conexion" role="status" hidden>Sin conexión</span>
+      <span class="sync" id="sync" role="status" hidden></span>
+      <button class="bell" id="asistBtn" data-act="asistente" aria-label="Preguntar a Hilvanta" title="Preguntar a Hilvanta"></button>
+      <button class="bell" id="buscaBtn" data-act="busca" aria-label="Buscar (Ctrl + K)" title="Buscar (Ctrl + K)"></button>
+      <div class="bellbox" id="bellbox"></div>
+      <div class="mebox" id="mebox"></div>
+    </div>
+  </div>
+  <nav class="side rail" id="side" aria-label="Menú"></nav>
+  <div class="sidescrim" id="sideScrim" data-act="menu" hidden></div>
+  <div class="mainwrap">
+    <header class="top">
+      <span class="miga" id="miga"></span>
+      <h1 id="topTitle">Panel</h1>
+    </header>
+    <main id="main"></main>
+  </div>
+  <nav class="botnav" id="botnav" aria-label="Menú rápido"></nav>
+</div>
+<div class="dscrim" id="dScrim" data-act="closeDrawer" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Detalle de la tarea" hidden></aside>
+<div class="scrim" id="modalScrim" hidden><form class="panel" id="modal" novalidate></form></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
+<script>window.HILVANTA_SERVIDOR = {url: 'https://jdcvdrorlddydiikmhlf.supabase.co', anon: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkY3Zkcm9ybGRkeWRpaWttaGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwMzE3NjEsImV4cCI6MjEwNzYwNzc2MX0.36cGCHe4x7181UIum9HnUTFPAjwrJpfkHznKWCicGkI'};
+window.HILVANTA_RUTAS = {base: '/'};   // direcciones reales (js/rutas.js)
+if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));</script>
+<script src="/app.be2ebf372b.js"></script>
+</body>
+</html>
