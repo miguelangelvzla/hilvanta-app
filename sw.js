@@ -1,8 +1,13 @@
 /* Hilvanta · trabajador sin conexión (app instalable). La página se pide primero a la red y, sin señal, se usa la
    última guardada; las bibliotecas y fuentes se guardan al primer uso. Los datos (Supabase) nunca se guardan aquí:
    los maneja la app (js/sinsenal.js). */
-const CACHE = 'hilvanta-v3';
-const BASE = ['./', 'index.html', 'manifest.webmanifest', 'icono-192.png', 'icono-512.png', 'icono.svg'];
+const CACHE = 'hilvanta-v5';
+// La página se pide siempre como «./» y nunca como «index.html»: Cloudflare manda «/index.html» a «/» con una
+// redirección, y Safari se niega a mostrar una página que el trabajador entrega redirigida («Response served by service
+// worker has redirections», 13-11-2026). Por si algún servidor redirige igual, `limpia` la entrega como respuesta nueva.
+const PAGINA = './';
+const BASE = [PAGINA, 'manifest.webmanifest', 'icono-192.png', 'icono-512.png', 'icono.svg'];
+const limpia = res => !res.redirected ? res : res.blob().then(b => new Response(b, { status: res.status, statusText: res.statusText, headers: res.headers }));
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(BASE)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
@@ -11,11 +16,11 @@ self.addEventListener('fetch', e => {
   if (r.mode === 'navigate' || u.origin === location.origin) {
     // Direcciones reales (/contabilidad/por-pagar): toda navegación es la misma página; se guarda una sola copia
     if (r.mode === 'navigate') {
-      e.respondWith(fetch('index.html').then(res => { if (res.ok) { const c = res.clone(); caches.open(CACHE).then(k => k.put('index.html', c)); } return res; })
-        .catch(() => caches.match('index.html')));
+      e.respondWith(fetch(PAGINA).then(limpia).then(res => { if (res.ok) { const c = res.clone(); caches.open(CACHE).then(k => k.put(PAGINA, c)); } return res; })
+        .catch(() => caches.match(PAGINA)));
       return;
     }
-    e.respondWith(fetch(r).then(res => { if (res.ok) { const c = res.clone(); caches.open(CACHE).then(k => k.put(r, c)); } return res; })
+    e.respondWith(fetch(r).then(limpia).then(res => { if (res.ok) { const c = res.clone(); caches.open(CACHE).then(k => k.put(r, c)); } return res; })
       .catch(() => caches.match(r)));
     return;
   }
@@ -31,6 +36,6 @@ self.addEventListener('notificationclick', e => {
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
     const c = cs.find(x => x.url.startsWith(self.registration.scope));
     if (c) { c.postMessage('hilvanta-avisos'); return c.focus(); }
-    return self.clients.openWindow('./');
+    return self.clients.openWindow('./por-resolver');   // lo que espera a la persona, junto (19-11-2026)
   }));
 });
