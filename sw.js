@@ -1,7 +1,7 @@
 /* Hilvanta · trabajador sin conexión (app instalable). La página se pide primero a la red y, sin señal, se usa la
    última guardada; las bibliotecas y fuentes se guardan al primer uso. Los datos (Supabase) nunca se guardan aquí:
    los maneja la app (js/sinsenal.js). */
-const CACHE = 'hilvanta-v5';
+const CACHE = 'hilvanta-v6';
 // La página se pide siempre como «./» y nunca como «index.html»: Cloudflare manda «/index.html» a «/» con una
 // redirección, y Safari se niega a mostrar una página que el trabajador entrega redirigida («Response served by service
 // worker has redirections», 13-11-2026). Por si algún servidor redirige igual, `limpia` la entrega como respuesta nueva.
@@ -12,12 +12,24 @@ self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c =>
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
   const r = e.request, u = new URL(r.url);
-  if (r.method !== 'GET' || /supabase\.co$/.test(u.hostname) || u.hostname === 'mindicador.cl' || /open-meteo\.com$/.test(u.hostname)) return;   // datos en vivo: siempre a la red
+  if (r.method !== 'GET' || /supabase\.co$/.test(u.hostname) || u.hostname === 'mindicador.cl' || /open-meteo\.com$|bigdatacloud\.net$/.test(u.hostname)) return;   // datos en vivo: siempre a la red
   if (r.mode === 'navigate' || u.origin === location.origin) {
     // Direcciones reales (/contabilidad/por-pagar): toda navegación es la misma página; se guarda una sola copia
     if (r.mode === 'navigate') {
       e.respondWith(fetch(PAGINA).then(limpia).then(res => { if (res.ok) { const c = res.clone(); caches.open(CACHE).then(k => k.put(PAGINA, c)); } return res; })
         .catch(() => caches.match(PAGINA)));
+      return;
+    }
+    // El programa y sus estilos llevan su huella en el nombre (app.<huella>.js): nunca cambian, así que se usa lo
+    // guardado sin esperar a la red (19-11-2026: antes cada apertura volvía a bajar unos 300 KB). Una versión nueva
+    // trae otro nombre en la página, y ese se baja una vez.
+    if (/\/app\.[0-9a-z]{6,}\.(js|css)$/i.test(u.pathname)) {
+      const ext = u.pathname.split('.').pop();
+      e.respondWith(caches.match(r).then(x => x || fetch(r).then(limpia).then(res => {
+        if (res.ok) { const c = res.clone(); caches.open(CACHE).then(async k => {   // las versiones anteriores ya no sirven
+          for (const q of await k.keys()) { const p = new URL(q.url).pathname; if (p !== u.pathname && /\/app\.[0-9a-z]{6,}\.(js|css)$/i.test(p) && p.endsWith('.' + ext)) k.delete(q); }
+          k.put(r, c); }); }
+        return res; })));
       return;
     }
     e.respondWith(fetch(r).then(limpia).then(res => { if (res.ok) { const c = res.clone(); caches.open(CACHE).then(k => k.put(r, c)); } return res; })
